@@ -67,7 +67,7 @@
                   };
                   environmentFile = config.age.secrets.taalbubbl.path;
                 };
-                services.analytics{
+                services.analytics = {
                   enable = true;
                   lokiHost = "bernina";
                   lokiPort = 3100;
