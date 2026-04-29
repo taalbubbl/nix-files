@@ -53,6 +53,11 @@
                 vikunja = {
                   enable = true;
                 };
+                analytics = {
+                  enable = true;
+                  lokiHost = "bernina";
+                  lokiPort = 3100;
+                };
               }
 
               # Separate module function — gives access to config
@@ -66,11 +71,6 @@
                     port = 5432;
                   };
                   environmentFile = config.age.secrets.taalbubbl.path;
-                };
-                services.analytics = {
-                  enable = true;
-                  lokiHost = "bernina";
-                  lokiPort = 3100;
                 };
               }
               )
