@@ -13,7 +13,7 @@ with lib; let
       path       = "/var/log/journal"
       forward_to = [loki.write.remote.receiver]
       labels = {
-        host = "${cfg.hostLabel}",
+        host = "${cfg.lokiHost}",
         job  = "systemd-journal",
       }
       relabel_rules = loki.relabel.journal.rules
@@ -40,11 +40,6 @@ in {
 
     package = mkPackageOption pkgs "grafana-alloy" { };
 
-    hostLabel = mkOption {
-      type = types.str;
-      description = "Human-readable label identifying this host in Loki.";
-      example = "my-remote-device";
-    };
 
     lokiHost = mkOption {
       type = types.str;
