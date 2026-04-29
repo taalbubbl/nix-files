@@ -25,6 +25,7 @@
               ./modules/cloudflared.nix
               ./modules/nginx.nix
               ./modules/vikunja.nix
+              ./modules/analytic.nix
 
               # Plain attribute set — no config references needed here
               {
@@ -66,7 +67,13 @@
                   };
                   environmentFile = config.age.secrets.taalbubbl.path;
                 };
-              })
+                services.analytics{
+                  enable = true;
+                  lokiHost = "bernina";
+                  lokiPort = 3100;
+                }
+              }
+              )
 
               agenix.nixosModules.default
               home-manager.nixosModules.home-manager

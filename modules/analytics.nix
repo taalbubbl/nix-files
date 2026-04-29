@@ -13,7 +13,7 @@ with lib; let
       path       = "/var/log/journal"
       forward_to = [loki.write.remote.receiver]
       labels = {
-        host = "${cfg.hostLabel}",
+        host = "${cfg.lokiHost}",
         job  = "systemd-journal",
       }
       relabel_rules = loki.relabel.journal.rules
@@ -35,16 +35,10 @@ with lib; let
   '';
 
 in {
-  options.alloyJournal = {
+  options.analytics = {
     enable = mkEnableOption "Grafana Alloy systemd journal forwarder";
 
     package = mkPackageOption pkgs "grafana-alloy" { };
-
-    hostLabel = mkOption {
-      type = types.str;
-      description = "Label added to all log entries to identify this host.";
-      example = "my-remote-device";
-    };
 
     lokiHost = mkOption {
       type = types.str;
