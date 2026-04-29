@@ -13,7 +13,7 @@ with lib; let
       path       = "/var/log/journal"
       forward_to = [loki.write.remote.receiver]
       labels = {
-        host = "${cfg.lokiHost}",
+        host = "${cfg.hostLabel}",
         job  = "systemd-journal",
       }
       relabel_rules = loki.relabel.journal.rules
@@ -40,6 +40,12 @@ in {
 
     package = mkPackageOption pkgs "grafana-alloy" { };
 
+    hostLabel = mkOption {
+      type = types.str;
+      description = "Human-readable label identifying this host in Loki.";
+      example = "my-remote-device";
+    };
+
     lokiHost = mkOption {
       type = types.str;
       description = "IP address or hostname of the Loki instance to push logs to.";
@@ -63,7 +69,8 @@ in {
       configPath = "/etc/alloy/config.alloy";
     };
 
-    # Alloy needs read access to the systemd journal
-    users.users.alloy.extraGroups = [ "systemd-journal" ];
+    # Grant journal access at the systemd unit level — do NOT touch users.users.alloy
+    # as services.alloy already manages that user internally
+    systemd.services.alloy.serviceConfig.SupplementaryGroups = [ "systemd-journal" ];
   };
 }
