@@ -25,7 +25,7 @@
               ./modules/cloudflared.nix
               ./modules/nginx.nix
               ./modules/vikunja.nix
-              ./modules/analytic.nix
+              ./modules/analytics.nix
 
               # Plain attribute set — no config references needed here
               {
