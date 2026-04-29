@@ -6,7 +6,7 @@
 }:
 with lib; let
 
-  cfg = config.alloyJournal;
+  cfg = config.analytics;
 
   alloyConfig = ''
     loki.source.journal "systemd" {
