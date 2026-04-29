@@ -71,7 +71,7 @@
                   enable = true;
                   lokiHost = "bernina";
                   lokiPort = 3100;
-                }
+                };
               }
               )
 
