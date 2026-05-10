@@ -80,9 +80,9 @@
                     package = pkgs.postgresql_18;                    
                   };
                   pgbackrest = {
+                    stanzaName = "chuchichaestli";
                     repositories = [
                       {
-                        stanzaName = "chuchichaestli";
                         s3_bucket = "pgbackups"; 
                         s3_region = "zuerich"; 
                         s3_endpoint = "http://kaepfnach:9000";
