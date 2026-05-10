@@ -188,7 +188,7 @@ in
                 log-level-console=info
                 log-level-file=debug
                     
-                [main]
+                [${cfg.pgbackrest.stanzaName}]
                 pg1-path=/var/lib/postgresql/${config.services.postgresql.package.psqlSchema}
                 pg1-port=${toString cfg.postgresql.port}
                 
