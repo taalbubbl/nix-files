@@ -143,7 +143,7 @@ in
                 # We use pgbackrest to push the WAL files to the S3 bucket
                 # Rather than hardcoding the path to the pgbackrest binary, we can use string interpolation to reference the pgbackrest package from Nixpkgs.
                 # Nix will install this package, store it somewhere in /Nix/store, and the correct path to the binary will be reflected in the `postgresql.conf` file
-                archive_command = "${pkgs.pgbackrest}/bin/pgbackrest --stanza=${stanzaName} archive-push %p";
+                archive_command = "${pkgs.pgbackrest}/bin/pgbackrest --stanza=${cfg.stanzaName} archive-push %p";
                 archive_timeout = "300";
         
                 # Recommended settings for better performance
@@ -216,9 +216,9 @@ in
 
             script = ''
                 if ! pgbackrest info; then
-                    pgbackrest --stanza=${stanzaName} stanza-create
+                    pgbackrest --stanza=${cfg.stanzaName} stanza-create
                 fi
-                pgbackrest --stanza=${stanzaName} --type=full backup
+                pgbackrest --stanza=${cfg.stanzaName} --type=full backup
             '';
         };
 
