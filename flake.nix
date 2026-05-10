@@ -26,6 +26,7 @@
               ./modules/nginx.nix
               ./modules/vikunja.nix
               ./modules/analytics.nix
+              ./modules/postgresql.nix 
 
               # Plain attribute set — no config references needed here
               {
