@@ -177,6 +177,11 @@ in
                     repo${toString repo.repo_index}-s3-key-secret=${repo.s3_secret_key}
                     repo${toString repo.repo_index}-s3-uri-style=path
                     repo${toString repo.repo_index}-s3-verify-tls=n 
+                                       
+                    repo1-host=kaepfnach
+                    repo1-host-port=9000
+                    repo1-host-type=tls
+                    repo1-host-ca-file=/dev/null
                 '';
                 # The concatMapStringsSep function from the Nixpkgs library does exactly what we want: it applies the function to each repository, and then concatenates the results into a single string
                 # Kind of like `map + join` in javascript, or `foldMap` in haskell
