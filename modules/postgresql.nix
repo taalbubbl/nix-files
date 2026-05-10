@@ -33,11 +33,11 @@ in
             # this particular option is a list of objects, each representing a repository for pgbackrest
             # this makes it possible to backup our database to multiple S3 buckets. We don't have to use more than one, but it's a nice feature to have
             # since we can then backup to different cloud providers and regions
-      stanzaName = mkOption {                        # ← moved here, top-level
-        type = types.str;
-        default = "main";
-        description = "Name of the pgbackrest stanza (database cluster name)";
-      };
+        stanzaName = mkOption {                        # ← moved here, top-level
+            type = types.str;
+            default = "main";
+            description = "Name of the pgbackrest stanza (database cluster name)";
+        };
 
       repositories = mkOption {
         type = types.listOf (types.submodule {
@@ -157,8 +157,11 @@ in
         # Configure pgBackRest
         # We can use environment.etc to declare the content and the ownership of a file on the host
         # We can use use the full power of the Nix language to generate the content of the file: functions, string interpolation, etc.
-        environment.etc."pgbackrest/pgbackrest.conf".owner = "postgres";
-        environment.etc."pgbackrest/pgbackrest.conf".text = 
+            environment.etc."pgbackrest/pgbackrest.conf" = {
+                user = "postgres";   # ← was "owner", correct attribute is "user"
+                group = "postgres";
+                mode = "0640";
+                text = 
             let
                 # This function generates the configuration for a single repository
                 # It takes a repository object as an argument and returns a string that will be used to configure the repository in the pgbackrest.conf file
@@ -193,7 +196,7 @@ in
                 retention-full=${toString cfg.pgbackrest.retention.full}
                 start-fast=y
                 '';
-
+            };
         # This is yet another example of what you can declaratively configure in NixOS: we've seen packages, files, postgresql, and now, systemd units!
         # This particular systemd service will run a full backup of the database. We can launch it manually using `systemctl start pgbackrest-full-backup`
         # or we can associate it with a systemd timer to run the backup on a schedule.
