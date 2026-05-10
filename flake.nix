@@ -61,7 +61,7 @@
               }
 
               # Separate module function — gives access to config
-              ({ config, pkgs ... }: {
+              ({ config, pkgs, ... }: {
                 services.taalbubbl = {
                   enable = true;
                   database = {
