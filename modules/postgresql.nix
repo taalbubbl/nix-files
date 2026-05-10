@@ -34,13 +34,14 @@ in
             # this makes it possible to backup our database to multiple S3 buckets. We don't have to use more than one, but it's a nice feature to have
             # since we can then backup to different cloud providers and regions
             repositories = mkOption {
-                type = types.listOf (types.submodule {
-                    options = {
-                        stanzaName = mkOption {
+                stanzaName = mkOption {
                           type = types.str;
                           description = "Name of database cluster";
                           default = "chuchichaestli";
                         };
+                type = types.listOf (types.submodule {
+                    options = {
+                        
                         repo_index = mkOption {
                             type = types.int;
                             description = "Index of the repository";
