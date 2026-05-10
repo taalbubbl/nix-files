@@ -33,52 +33,46 @@ in
             # this particular option is a list of objects, each representing a repository for pgbackrest
             # this makes it possible to backup our database to multiple S3 buckets. We don't have to use more than one, but it's a nice feature to have
             # since we can then backup to different cloud providers and regions
-            repositories = mkOption {
-                stanzaName = mkOption {
-                          type = types.str;
-                          description = "Name of database cluster";
-                          default = "chuchichaestli";
-                        };
-                type = types.listOf (types.submodule {
-                    options = {
-                        
-                        repo_index = mkOption {
-                            type = types.int;
-                            description = "Index of the repository";
-                            default = 1;
-                        };
-                        s3_bucket = mkOption {
-                            type = types.str;
-                            description = "S3 bucket to use for pgbackrest backups";
-                        };
-                        s3_backups_path = mkOption {
-                            type = types.str;
-                            default = "backups";
-                            description = "Path in the S3 bucket to use for pgbackrest backups";
-                        };
-                        s3_region = mkOption {
-                            type = types.str;
-                            description = "Region of the S3 bucket";
-                            default = "zuerich";
-                        };
-                        s3_endpoint = mkOption {
-                            type = types.str;
-                            description = "Endpoint of the S3 bucket";
-                            default = "kaepfnach:9000";
-                        };
-                        s3_access_key = mkOption {
-                            type = types.str;
-                            description = "Access key for the S3 bucket";
-                        };
-                        s3_secret_key = mkOption {
-                            type = types.str;
-                            description = "Secret key for the S3 bucket";
-                        };
-                    };
-                });
-                default = [];
-                description = "S3 repositories configuration for pgbackrest backups";
+      stanzaName = mkOption {                        # ← moved here, top-level
+        type = types.str;
+        default = "main";
+        description = "Name of the pgbackrest stanza (database cluster name)";
+      };
+
+      repositories = mkOption {
+        type = types.listOf (types.submodule {
+          options = {
+            repo_index = mkOption {
+              type = types.int;
+              default = 1;
             };
+            s3_bucket = mkOption {
+              type = types.str;
+            };
+            s3_backups_path = mkOption {
+              type = types.str;
+              default = "/backups";
+            };
+            s3_region = mkOption {
+              type = types.str;
+              default = "zuerich";
+            };
+            s3_endpoint = mkOption {
+              type = types.str;
+              default = "kaepfnach:9000";
+            };
+            s3_access_key = mkOption {
+              type = types.str;
+            };
+            s3_secret_key = mkOption {
+              type = types.str;
+            };
+          };
+        });
+        default = [];
+        description = "S3 repositories configuration for pgbackrest backups";
+      };
+
 
             # This option defines how many full backups we want to keep
             retention = {
