@@ -22,7 +22,7 @@
   ...
 }:
 with lib; let
-  stanzaName = "taalbubbl";
+  stanzaName = "chuchichaestli";
   repoHost   = "kaepfnach";
   repoUser   = "pgbackrest";
   repoPath   = "/data1/pgbackrest";

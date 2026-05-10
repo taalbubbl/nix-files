@@ -61,7 +61,7 @@
               }
 
               # Separate module function — gives access to config
-              ({ config, ... }: {
+              ({ config, pkgs ... }: {
                 services.taalbubbl = {
                   enable = true;
                   database = {
@@ -76,9 +76,7 @@
                   enable = true;
                   postgresql = {
                     port = 5432;
-                    package = pkgs.postgresql_18;
-                    stanzaName = "chuchichaestli";
-                    
+                    package = pkgs.postgresql_18;                    
                   };
                   pgbackrest = {
                     repositories = [
