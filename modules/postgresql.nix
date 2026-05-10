@@ -239,17 +239,14 @@ in
             # Create a directory for pgbackrest transient data
             "d /var/spool/pgbackrest 0700 postgres postgres -"
         ];
-        # on kaepfnach
-        services.nginx = {
-        enable = true;
-        virtualHosts."kaepfnach" = {
-            listen = [{ addr = "0.0.0.0"; port = 9001; ssl = true; }];
-            sslCertificate = "/var/lib/self-signed/cert.pem";
-            sslCertificateKey = "/var/lib/self-signed/key.pem";
-            locations."/" = {
-            proxyPass = "http://127.0.0.1:9000";
+        services.caddy = {
+            enable = true;
+            virtualHosts."kaepfnach:9001" = {
+                extraConfig = ''
+                tls internal
+                reverse_proxy localhost:9000
+                '';
             };
-        };
-        };
+};
     };
 }
