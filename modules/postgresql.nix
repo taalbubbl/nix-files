@@ -187,15 +187,14 @@ in
                 process-max=4
                 log-level-console=info
                 log-level-file=debug
-                    
-                [${cfg.pgbackrest.stanzaName}]
-                pg1-path=/var/lib/postgresql/${config.services.postgresql.package.psqlSchema}
-                pg1-port=${toString cfg.postgresql.port}
-                
                 archive-async=y
                 archive-push-queue-max=4GB
                 retention-full=${toString cfg.pgbackrest.retention.full}
                 start-fast=y
+                    
+                [${cfg.pgbackrest.stanzaName}]
+                pg1-path=/var/lib/postgresql/${config.services.postgresql.package.psqlSchema}
+                pg1-port=${toString cfg.postgresql.port}
                 '';
             };
         # This is yet another example of what you can declaratively configure in NixOS: we've seen packages, files, postgresql, and now, systemd units!
