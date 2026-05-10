@@ -84,7 +84,7 @@
                     repositories = [
                       {
                         s3_bucket = "pgbackups"; 
-                        s3_region = "zuerich"; 
+                        s3_region = "zurich"; 
                         s3_endpoint = "kaepfnach:9000";
                         s3_access_key = "GKf645bbb3f4e4dddef5f39959";
                         s3_secret_key = "c3fae00d51d40e4c9d515b0ebbe0d9fbce12c38486eb3f3a3f8873988cb9d628";
