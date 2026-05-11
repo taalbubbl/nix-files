@@ -55,7 +55,7 @@ in
             };
             s3_region = mkOption {
               type = types.str;
-              default = "zuerich";
+              default = "zurich";
             };
             s3_endpoint = mkOption {
               type = types.str;
