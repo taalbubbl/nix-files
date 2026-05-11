@@ -139,6 +139,7 @@ in {
       # Otherwise use: "postgresql://username:password@localhost:5432/postgres?sslmode=disable"
       dataSourceName = "postgresql:///postgres?host=/run/postgresql&sslmode=disable";
       port = 9187;
+      user = "postgres";
     };
 
     # ── Loki ──────────────────────────────────────────────────────────────────
