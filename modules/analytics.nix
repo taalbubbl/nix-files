@@ -11,6 +11,7 @@ with lib; let
     loki.source.journal "systemd" {
       path       = "/var/log/journal"
       forward_to = [loki.write.remote.receiver]
+      max_age    = "720h"
       labels = {
         host = constants.hostname,
         job  = "systemd-journal",
