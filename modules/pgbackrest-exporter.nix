@@ -11,7 +11,6 @@ let
     ;
 in
 {
-  # Plug into the standard prometheus exporters option set
   options.services.prometheus.exporters.pgbackrest = {
     enable = lib.mkEnableOption "pgBackRest Prometheus exporter";
 
@@ -20,6 +19,13 @@ in
       default = pkgs.pgbackrest-exporter;
       defaultText = lib.literalExpression "pkgs.pgbackrest-exporter";
       description = "The pgbackrest_exporter package to use.";
+    };
+
+    pgbackrestPackage = mkOption {
+      type = types.package;
+      default = pkgs.pgbackrest;
+      defaultText = lib.literalExpression "pkgs.pgbackrest";
+      description = "The pgBackRest package to put on PATH for the exporter.";
     };
 
     port = mkOption {
@@ -156,6 +162,9 @@ in
       description = "pgBackRest Prometheus Exporter";
       wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+
+      # Make pgbackrest binary available in the service's PATH
+      path = [ cfg.pgbackrestPackage ];
 
       serviceConfig = {
         User = cfg.user;
