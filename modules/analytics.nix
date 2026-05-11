@@ -12,6 +12,7 @@ with lib; let
       path       = "/var/log/journal"
       forward_to = [loki.write.remote.receiver]
       max_age    = "720h"
+      start_position = "beginning"
       labels = {
         host = constants.hostname,
         job  = "systemd-journal",
