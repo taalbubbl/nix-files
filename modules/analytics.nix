@@ -121,10 +121,9 @@ in {
     # ── pgBackRest Exporter ───────────────────────────────────────────────────
     services.prometheus.exporters.pgbackrest = {
       enable = true;
-      # The exporter needs to run as a user that can read pgbackrest configs/logs
-      # Often this is 'postgres' or 'pgbackrest'
-      user = "postgres"; 
-      port = 9854;
+      stanzaInclude = [ "chuchichaestli" ];
+      collectInterval = 300;
+      # user/group default to "postgres" which already has pgBackRest access
     };
 
     services.prometheus.exporters.node = {

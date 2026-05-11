@@ -1,26 +1,19 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}:
+{ config, lib, pkgs, options, ... }:
 
 let
-  cfg = config.services.pgbackrest-exporter;
+  cfg = config.services.prometheus.exporters.pgbackrest;
   inherit (lib)
-    mkEnableOption
     mkOption
-    mkIf
     types
-    escapeShellArgs
-    optionals
-    optionalString
     concatMap
+    optionals
+    escapeShellArgs
     ;
 in
 {
-  options.services.pgbackrest-exporter = {
-    enable = mkEnableOption "pgBackRest Prometheus exporter";
+  # Plug into the standard prometheus exporters option set
+  options.services.prometheus.exporters.pgbackrest = {
+    enable = lib.mkEnableOption "pgBackRest Prometheus exporter";
 
     package = mkOption {
       type = types.package;
@@ -29,128 +22,126 @@ in
       description = "The pgbackrest_exporter package to use.";
     };
 
+    port = mkOption {
+      type = types.port;
+      default = 9854;
+      description = "Port on which to expose metrics.";
+    };
+
     listenAddress = mkOption {
       type = types.str;
-      default = ":9854";
-      example = "127.0.0.1:9854";
-      description = "Address on which to expose metrics (--web.listen-address).";
+      default = "0.0.0.0";
+      description = "Address on which to expose metrics.";
     };
 
     telemetryPath = mkOption {
       type = types.str;
       default = "/metrics";
-      description = "HTTP path under which to expose metrics (--web.telemetry-path).";
+      description = "HTTP path under which to expose metrics.";
     };
 
     webConfigFile = mkOption {
       type = types.nullOr types.path;
       default = null;
-      description = ''
-        Path to a web configuration file enabling TLS or basic authentication.
-        See https://github.com/prometheus/exporter-toolkit/blob/master/docs/web-configuration.md.
-      '';
+      description = "Path to web config file for TLS/basic-auth (exporter-toolkit format).";
     };
 
     collectInterval = mkOption {
       type = types.int;
       default = 600;
-      description = "Metrics collection interval in seconds (--collect.interval).";
+      description = "Metrics collection interval in seconds.";
     };
 
     backrestConfig = mkOption {
       type = types.nullOr types.path;
       default = null;
       example = "/etc/pgbackrest/pgbackrest.conf";
-      description = "Full path to the pgBackRest configuration file (--backrest.config).";
+      description = "Full path to the pgBackRest configuration file.";
     };
 
     backrestConfigIncludePath = mkOption {
       type = types.nullOr types.path;
       default = null;
-      description = "Full path to additional pgBackRest configuration files (--backrest.config-include-path).";
+      description = "Full path to additional pgBackRest configuration files.";
     };
 
     stanzaInclude = mkOption {
       type = types.listOf types.str;
       default = [ ];
-      example = [ "main" "replica" ];
-      description = "Stanzas to collect metrics for. Empty means all stanzas (--backrest.stanza-include).";
+      example = [ "main" ];
+      description = "Stanzas to collect metrics for. Empty = all stanzas.";
     };
 
     stanzaExclude = mkOption {
       type = types.listOf types.str;
       default = [ ];
-      example = [ "test" ];
-      description = "Stanzas to exclude from metric collection (--backrest.stanza-exclude).";
+      description = "Stanzas to exclude from metric collection.";
     };
 
     backupType = mkOption {
       type = types.nullOr (types.enum [ "full" "incr" "diff" ]);
       default = null;
-      description = "Restrict metric collection to a specific backup type (--backrest.backup-type).";
+      description = "Restrict collection to a specific backup type.";
     };
 
     databaseCount = mkOption {
       type = types.bool;
       default = false;
-      description = "Expose the number of databases in backups (--backrest.database-count). Requires pgBackRest >= v2.41.";
+      description = "Expose number of databases in backups. Requires pgBackRest >= v2.41.";
     };
 
     databaseParallelProcesses = mkOption {
       type = types.int;
       default = 1;
-      description = "Number of parallel processes for database count collection (--backrest.database-parallel-processes).";
+      description = "Parallel processes for database count collection.";
     };
 
     databaseCountLatest = mkOption {
       type = types.bool;
       default = false;
-      description = "Expose the number of databases in the latest backups (--backrest.database-count-latest). Requires pgBackRest >= v2.41.";
+      description = "Expose number of databases in latest backups. Requires pgBackRest >= v2.41.";
     };
 
     referenceCount = mkOption {
       type = types.bool;
       default = false;
-      description = "Expose the number of references to other backups (--backrest.reference-count).";
+      description = "Expose number of references to other backups.";
     };
 
     verboseWal = mkOption {
       type = types.bool;
       default = false;
-      description = "Expose WALMin/WALMax as additional metric labels (--backrest.verbose-wal). Creates new time series on each WAL archiving.";
+      description = "Expose WALMin/WALMax as additional metric labels.";
     };
 
     collectorPgbackrest = mkOption {
       type = types.bool;
       default = true;
-      description = ''
-        Enable the pgBackRest collector. When false, only version and build-info
-        metrics are collected (--no-collector.pgbackrest).
-      '';
+      description = "Enable pgBackRest collector. When false, only version/build-info metrics are collected.";
     };
 
     logLevel = mkOption {
       type = types.enum [ "debug" "info" "warn" "error" ];
       default = "info";
-      description = "Log level (--log.level).";
+      description = "Log level.";
     };
 
     logFormat = mkOption {
       type = types.enum [ "logfmt" "json" ];
       default = "logfmt";
-      description = "Log output format (--log.format).";
+      description = "Log output format.";
     };
 
     user = mkOption {
       type = types.str;
-      default = "pgbackrest-exporter";
-      description = "User under which the exporter runs. Must have read access to pgBackRest config/repos.";
+      default = "postgres";
+      description = "User to run the exporter as. Needs read access to pgBackRest config/repos.";
     };
 
     group = mkOption {
       type = types.str;
-      default = "pgbackrest-exporter";
-      description = "Group under which the exporter runs.";
+      default = "postgres";
+      description = "Group to run the exporter as.";
     };
 
     extraFlags = mkOption {
@@ -160,16 +151,8 @@ in
     };
   };
 
-  config = mkIf cfg.enable {
-    users.users.${cfg.user} = {
-      isSystemUser = true;
-      group = cfg.group;
-      description = "pgBackRest exporter service user";
-    };
-
-    users.groups.${cfg.group} = { };
-
-    systemd.services.pgbackrest-exporter = {
+  config = lib.mkIf cfg.enable {
+    systemd.services."prometheus-pgbackrest-exporter" = {
       description = "pgBackRest Prometheus Exporter";
       wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
@@ -177,11 +160,12 @@ in
       serviceConfig = {
         User = cfg.user;
         Group = cfg.group;
+
         ExecStart =
           let
             args =
               [
-                "--web.listen-address=${cfg.listenAddress}"
+                "--web.listen-address=${cfg.listenAddress}:${toString cfg.port}"
                 "--web.telemetry-path=${cfg.telemetryPath}"
                 "--collect.interval=${toString cfg.collectInterval}"
                 "--log.level=${cfg.logLevel}"
@@ -206,14 +190,10 @@ in
         Restart = "on-failure";
         RestartSec = "5s";
 
-        # Hardening
         NoNewPrivileges = true;
         PrivateTmp = true;
         ProtectSystem = "strict";
         ProtectHome = true;
-        ReadOnlyPaths = [ "/" ];
-        # Allow reading pgBackRest config/repo paths if needed — loosen via
-        # ReadWritePaths / ReadOnlyPaths overrides in your host config.
         CapabilityBoundingSet = "";
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
