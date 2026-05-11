@@ -5,7 +5,6 @@
   ...
 }:
 with lib; let
-
   cfg = config.analytics;
 
   alloyConfig = ''
@@ -13,7 +12,7 @@ with lib; let
       path       = "/var/log/journal"
       forward_to = [loki.write.remote.receiver]
       labels = {
-        host = "${cfg.lokiHost}",
+        host = constants.hostname,
         job  = "systemd-journal",
       }
       relabel_rules = loki.relabel.journal.rules
@@ -29,43 +28,140 @@ with lib; let
 
     loki.write "remote" {
       endpoint {
-        url = "http://${cfg.lokiHost}:${toString cfg.lokiPort}/loki/api/v1/push"
+        url = "http://127.0.0.1:${toString cfg.portLoki}/loki/api/v1/push"
       }
     }
   '';
-
 in {
   options.analytics = {
-    enable = mkEnableOption "Grafana Alloy systemd journal forwarder";
+    enable = mkEnableOption "Enable Analytics service";
 
-    package = mkPackageOption pkgs "grafana-alloy" { };
-
-
-    lokiHost = mkOption {
+    domain = mkOption {
       type = types.str;
-      description = "IP address or hostname of the Loki instance to push logs to.";
-      example = "192.168.1.10";
+      default = "grafana.taalbubbl.org";
     };
-
-    lokiPort = mkOption {
+    port = mkOption {
+      type = types.port;
+      default = 2342;
+    };
+    portLoki = mkOption {
       type = types.port;
       default = 3100;
-      description = "Port of the Loki HTTP API.";
     };
+    portPrometheus = mkOption {
+      type = types.port;
+      default = 3014;
+    };
+    alloyPackage = mkPackageOption pkgs "grafana-alloy" { };
   };
 
   config = mkIf cfg.enable {
 
+    # ── Grafana ───────────────────────────────────────────────────────────────
+    services.grafana = {
+      enable = true;
+      settings = {
+        auth.disable_login_form = false;
+        server = {
+          http_addr = "127.0.0.1";
+          http_port = cfg.port;
+          enable_gzip = true;
+          domain = cfg.domain;
+          allow_embedding = true;
+        };
+        analytics.reporting_enabled = false;
+      };
+      provision = {
+        enable = true;
+        datasources.settings.datasources = [
+          {
+            name = "Prometheus";
+            type = "prometheus";
+            url = "http://127.0.0.1:${toString cfg.portPrometheus}";
+            isDefault = true;
+          }
+          {
+            name = "Loki";
+            type = "loki";
+            url = "http://127.0.0.1:${toString cfg.portLoki}";
+          }
+        ];
+      };
+    };
+
+    # ── Prometheus ────────────────────────────────────────────────────────────
+    services.prometheus = {
+      enable = true;
+      port = cfg.portPrometheus;
+      scrapeConfigs = [
+        {
+          job_name = "node";
+          static_configs = [
+            {
+              targets = ["127.0.0.1:${toString config.services.prometheus.exporters.node.port}"];
+            }
+          ];
+        }
+      ];
+    };
+
+    services.prometheus.exporters.node = {
+      enable = true;
+      enabledCollectors = ["systemd"];
+      port = 9002;
+    };
+
+    # ── Loki ──────────────────────────────────────────────────────────────────
+    services.loki = {
+      enable = true;
+      configuration = {
+        server = {
+          http_listen_port = cfg.portLoki;
+          http_listen_address = "127.0.0.1";
+        };
+
+        auth_enabled = false;
+
+        common = {
+          instance_addr = "127.0.0.1";
+          path_prefix = "/var/lib/loki";
+          storage.filesystem = {
+            chunks_directory = "/var/lib/loki/chunks";
+            rules_directory = "/var/lib/loki/rules";
+          };
+          replication_factor = 1;
+          ring.kvstore.store = "inmemory";
+        };
+
+        schema_config.configs = [
+          {
+            from = "2020-01-01";
+            store = "tsdb";
+            object_store = "filesystem";
+            schema = "v13";
+            index = {
+              prefix = "index_";
+              period = "24h";
+            };
+          }
+        ];
+
+        query_range.results_cache.cache.embedded_cache = {
+          enabled = true;
+          max_size_mb = 100;
+        };
+      };
+    };
+
+    # ── Alloy ─────────────────────────────────────────────────────────────────
     environment.etc."alloy/config.alloy".text = alloyConfig;
 
     services.alloy = {
       enable = true;
-      package = cfg.package;
+      package = cfg.alloyPackage;
       configPath = "/etc/alloy/config.alloy";
     };
 
-    # Grant journal access at the systemd unit level — do NOT touch users.users.alloy
-    # as services.alloy already manages that user internally
-    systemd.services.alloy.serviceConfig.SupplementaryGroups = [ "systemd-journal" ];
+    systemd.services.alloy.serviceConfig.SupplementaryGroups = ["systemd-journal"];
   };
 }

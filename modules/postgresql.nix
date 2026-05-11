@@ -239,14 +239,5 @@ in
             # Create a directory for pgbackrest transient data
             "d /var/spool/pgbackrest 0700 postgres postgres -"
         ];
-        services.caddy = {
-            enable = true;
-            virtualHosts."kaepfnach:9001" = {
-                extraConfig = ''
-                tls internal
-                reverse_proxy localhost:9000
-                '';
-            };
-};
     };
 }

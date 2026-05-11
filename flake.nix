@@ -56,8 +56,8 @@
                 };
                 analytics = {
                   enable = true;
-                  lokiHost = "bernina";
-                  lokiPort = 3100;
+                  # lokiHost = "bernina";
+                  # lokiPort = 3100;
                 };
               }
 
