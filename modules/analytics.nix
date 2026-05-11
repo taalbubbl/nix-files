@@ -104,13 +104,42 @@ in {
             }
           ];
         }
+        {
+          job_name = "pgbackrest";
+          static_configs = [{
+            targets = ["127.0.0.1:${toString config.services.prometheus.exporters.pgbackrest.port}"];
+          }];
+        }
+        {
+          job_name = "postgres";
+          static_configs = [{
+            targets = ["127.0.0.1:${toString config.services.prometheus.exporters.postgres.port}"];
+          }];
+        }
       ];
+    };
+    # ── pgBackRest Exporter ───────────────────────────────────────────────────
+    services.prometheus.exporters.pgbackrest = {
+      enable = true;
+      # The exporter needs to run as a user that can read pgbackrest configs/logs
+      # Often this is 'postgres' or 'pgbackrest'
+      user = "postgres"; 
+      port = 9854;
     };
 
     services.prometheus.exporters.node = {
       enable = true;
       enabledCollectors = ["systemd"];
       port = 9002;
+    };
+
+    services.prometheus.exporters.postgres = {
+      enable = true;
+      # The connection string. If your DB is local and allows peer auth:
+      # "postgresql:///postgres?host=/run/postgresql&sslmode=disable"
+      # Otherwise use: "postgresql://username:password@localhost:5432/postgres?sslmode=disable"
+      dataSourceName = "postgresql:///postgres?host=/run/postgresql&sslmode=disable";
+      port = 9187;
     };
 
     # ── Loki ──────────────────────────────────────────────────────────────────

@@ -59,7 +59,7 @@ in
             };
             s3_endpoint = mkOption {
               type = types.str;
-              default = "kaepfnach:9000";
+              default = "kaepfnach:9001";
             };
             s3_access_key = mkOption {
               type = types.str;
