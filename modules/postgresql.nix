@@ -236,9 +236,9 @@ in
         # Finally, we need to create a couple of directories for pgbackrest to work
         systemd.tmpfiles.rules = [
             # Create a directory for pgbackrest logs
-            "d /var/log/pgbackrest 0700 postgres postgres -"
+            "d /var/log/pgbackrest 0750 postgres postgres -"
             # Create a directory for pgbackrest transient data
-            "d /var/spool/pgbackrest 0700 postgres postgres -"
+            "d /var/spool/pgbackrest 0750 postgres postgres -"
         ];
     };
 }
