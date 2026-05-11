@@ -16,7 +16,7 @@
   outputs = { self, nixpkgs, home-manager, agenix, taalbubbl}:
   let
     overlay = final: prev: {
-      pgbackrest-exporter = final.callPackage ./pkgs/pgbackrest-exporter { };
+      pgbackrest-exporter = final.callPackage ./pkgs/pgbackrest-exporter.nix { };
     };
   in
     {
