@@ -134,6 +134,10 @@ in {
           ring.kvstore.store = "inmemory";
         };
 
+        limits_config = {
+          reject_old_samples = false;
+        };
+
         schema_config.configs = [
           {
             from = "2020-01-01";
