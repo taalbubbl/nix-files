@@ -192,6 +192,7 @@ in
                 retention-full=${toString cfg.pgbackrest.retention.full}
                 start-fast=y
                 archive-timeout=300
+                spool-path=/var/lib/pgbackrest/spool
 
                     
                 [${cfg.pgbackrest.stanzaName}]
