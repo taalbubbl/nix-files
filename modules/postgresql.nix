@@ -139,7 +139,6 @@ in
                 # Rather than hardcoding the path to the pgbackrest binary, we can use string interpolation to reference the pgbackrest package from Nixpkgs.
                 # Nix will install this package, store it somewhere in /Nix/store, and the correct path to the binary will be reflected in the `postgresql.conf` file
                 archive_command = "${pkgs.pgbackrest}/bin/pgbackrest --stanza=${cfg.pgbackrest.stanzaName} archive-push %p";
-                archive_command = "${pkgs.pgbackrest}/bin/pgbackrest --stanza=${cfg.pgbackrest.stanzaName} archive-push %p";
                 archive_timeout = "300";
         
                 # Recommended settings for better performance
