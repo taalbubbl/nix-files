@@ -14,12 +14,18 @@
   };
 
   outputs = { self, nixpkgs, home-manager, agenix, taalbubbl}:
+  let
+    overlay = final: prev: {
+      pgbackrest-exporter = final.callPackage ./pkgs/pgbackrest-exporter { };
+    };
+  in
     {
       nixosConfigurations = {
         chuchichaestli =
           nixpkgs.lib.nixosSystem {
             system = "x86_64-linux";
             modules = [
+              { nixpkgs.overlays = [ overlay ]; }
               taalbubbl.nixosModules.default
               ./machines/chuchichaestli/default.nix
               ./modules/cloudflared.nix
@@ -27,6 +33,7 @@
               ./modules/vikunja.nix
               ./modules/analytics.nix
               ./modules/postgresql.nix 
+              ./modules/pgbackrest-exporter.nix
 
               # Plain attribute set — no config references needed here
               {
