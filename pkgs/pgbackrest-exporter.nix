@@ -14,7 +14,7 @@ buildGoModule rec {
     rev = "v${version}";
     # Run `nix-prefetch-url --unpack https://github.com/woblerr/pgbackrest_exporter/archive/v0.23.0.tar.gz`
     # or `nix store prefetch-file --hash-type sha256 --unpack ...` to get the real hash.
-    hash = "sha256-sha256-iT2LwbnghTiZ97dhf7EiaehPIze7DKCjVxv0ihTIb50==";
+    hash = "sha256-sha256-iT2LwbnghTiZ97dhf7EiaehPIze7DKCjVxv0ihTIb50=";
   };
 
   vendorHash = null; # repo vendors its dependencies under ./vendor
