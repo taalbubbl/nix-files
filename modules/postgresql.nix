@@ -191,6 +191,8 @@ in
                 archive-push-queue-max=4GB
                 retention-full=${toString cfg.pgbackrest.retention.full}
                 start-fast=y
+                archive-timeout=300
+
                     
                 [${cfg.pgbackrest.stanzaName}]
                 pg1-path=/var/lib/postgresql/${config.services.postgresql.package.psqlSchema}
