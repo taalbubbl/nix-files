@@ -149,11 +149,6 @@ in
                 listen_addresses = lib.mkForce "*";
                 max_connections = "100";
             };
-
-            # This fixes pgbackrest backup issue
-            extraServiceConfig = {
-                PrivateMounts = "no";
-            };
         };
 
         # Install pgbackrest
@@ -236,6 +231,10 @@ in
                 OnCalendar = cfg.pgbackrest.schedule.full;
                 Persistent = true;
             };
+        };
+
+        systemd.services.postgresql.serviceConfig = {
+            PrivateMounts = lib.mkForce "no";
         };
 
         # Finally, we need to create a couple of directories for pgbackrest to work
