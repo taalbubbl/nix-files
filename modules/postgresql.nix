@@ -119,14 +119,14 @@ in
             # initialScript = cfg.postgresql.initialScript;
 
             # # Allow all local connections and password authentication on the network
-            # authentication = pkgs.lib.mkOverride 10 ''
-            #     # Managed by a Nix module
-            #     #type database  DBuser  auth-method
-            #     local all       all     trust
+            authentication = pkgs.lib.mkOverride 10 ''
+                # Managed by a Nix module
+                #type database  DBuser  auth-method
+                local all       all     trust
 
-            #     # allow password authentication on all interfaces
-            #     host  all       all      all     scram-sha-256
-            # '';
+                # allow password authentication on all interfaces
+                host  all       all      all     scram-sha-256
+            '';
 
             # Configure postgres
             # This Nix option lets us declare the content of the postgresql.conf file
