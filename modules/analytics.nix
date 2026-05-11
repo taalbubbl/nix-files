@@ -137,6 +137,10 @@ in {
 
         limits_config = {
           reject_old_samples = false;
+          reject_old_samples_max_age = "8760h"; # 1 year
+          max_global_streams_per_user = 10000;
+          ingestion_rate_mb = 64;
+          ingestion_burst_size_mb = 128;
         };
 
         schema_config.configs = [
