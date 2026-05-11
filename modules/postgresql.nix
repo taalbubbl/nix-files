@@ -191,7 +191,6 @@ in
                 archive-push-queue-max=4GB
                 retention-full=${toString cfg.pgbackrest.retention.full}
                 start-fast=y
-                archive-timeout=300
                 spool-path=/var/lib/pgbackrest/spool
 
                     
