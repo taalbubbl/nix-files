@@ -234,7 +234,11 @@ in
         };
 
         systemd.services.postgresql.serviceConfig = {
-            PrivateMounts = lib.mkForce "no";
+            # Poke a hole in the systemd sandbox to allow Postgres to write to pgBackRest's directories
+            ReadWritePaths = [
+            "/var/spool/pgbackrest"
+            "/var/log/pgbackrest"
+            ];
         };
 
         # Finally, we need to create a couple of directories for pgbackrest to work
