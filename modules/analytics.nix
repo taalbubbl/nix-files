@@ -62,6 +62,7 @@ in {
       enable = true;
       settings = {
         auth.disable_login_form = false;
+        security.secret_key = "SW2YcwTIb9zpOOhoPsMm";
         server = {
           http_addr = "127.0.0.1";
           http_port = cfg.port;
