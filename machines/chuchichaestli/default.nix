@@ -111,7 +111,7 @@
     let
       keysContent = builtins.readFile (builtins.fetchurl {
         url = "https://github.com/sjiub.keys";
-        sha256 = "";
+        sha256 = "sha256:17sd3qx59ngly4pdx2w09hkak9xj25wl9xdwdqisbza8frfvzvir";
       });
     in
     builtins.filter (key: key != "") 
