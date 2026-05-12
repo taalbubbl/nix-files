@@ -101,9 +101,25 @@
     builtins.filter (key: key != "") 
       (lib.strings.splitString "\n" keysContent);
   };
+  users.users.mika = {
+    isNormalUser = true;
+    description = "Mika";
+    shell = pkgs.zsh;
+    extraGroups = [ "networkmanager" "wheel"];
+    packages = with pkgs; [];
+    openssh.authorizedKeys.keys = 
+    let
+      keysContent = builtins.readFile (builtins.fetchurl {
+        url = "https://github.com/sjiub.keys";
+        sha256 = "";
+      });
+    in
+    builtins.filter (key: key != "") 
+      (lib.strings.splitString "\n" keysContent);
+  };
   # Add users to taaltaak group
   users.groups.taalbubbl = {
-    members = [ "david" "tonda" ];
+    members = [ "david" "tonda" "markus" "mika"];
   };
 
   systemd.tmpfiles.rules = [
