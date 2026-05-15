@@ -72,7 +72,6 @@ in {
           cookies = [{
             domain = cfg.sessionDomain;
             authelia_url = "https://${cfg.domain}";
-            default_redirection_url = "https://${cfg.domain}";
           }];
         };
 
