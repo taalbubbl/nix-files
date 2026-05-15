@@ -39,7 +39,7 @@ in {
     };
     secretConfigFile = mkOption {
       type = types.path;
-      default = config.age.secrets.vikunja-config.path;
+      default = config.sops.secrets.vikunja-config.path;
       description = "Path to the decrypted agenix config.yaml file.";
     };
   };
@@ -91,7 +91,7 @@ in {
         maxitemsperpage = 100;
         # JWTsecret gets incerted by environment file
         jwtsecret = {
-          file = config.age.secrets.vikunja-jwt.path;
+          file = config.sops.secrets.vikunja-jwt.path;
         };
         };
         #Configure openid
@@ -107,7 +107,7 @@ in {
               logouturl = "https://auth.davidwild.ch/application/o/vikunja/end-session/";
               clientid = "NYytqakPqAeNuCcDmHcRcge10ADMm7o4yrxUGDau";
               clientsecret = {
-                file = config.age.secrets.vikunja-client-secret.path;
+                file = config.sops.secrets.vikunja-client-secret.path;
               };
             };
           };

@@ -154,7 +154,7 @@ in {
         auth_enabled = false;
 
         common = {
-          instance_addr = "127.0.0.1";
+          instance_addr = "127.0.0.1"; 
           path_prefix = "/var/lib/loki";
           storage.filesystem = {
             chunks_directory = "/var/lib/loki/chunks";

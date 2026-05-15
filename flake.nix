@@ -8,12 +8,12 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    agenix.url = "github:ryantm/agenix";
+    sops-nix.url = "github:Mic92/sops-nix";
 
     taalbubbl.url = "git+ssh://git@github.com/taalbubbl/taalbubbl?ref=main";
   };
 
-  outputs = { self, nixpkgs, home-manager, agenix, taalbubbl}:
+  outputs = { self, nixpkgs, home-manager, sops-nix, taalbubbl}:
   let
     overlay = final: prev: {
       pgbackrest-exporter = final.callPackage ./pkgs/pgbackrest-exporter.nix { };
@@ -37,26 +37,22 @@
 
               # Plain attribute set — no config references needed here
               {
-                age = {
-                  identityPaths = [ "/home/david/.ssh/id_ed25519" ];
+                sops = {
+                  defaultSopsFile = ./security/secrets.yaml;
+                  age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
                   secrets.vikunja-config = {
-                    file = "/home/david/nix-files/security/vikunja-config.age";
                     mode = "0440";
                     group = "keys";
                   };
                   secrets.vikunja-client-secret = {
-                    file = "/home/david/nix-files/security/vikunja-client-secret.age";
                     mode = "0440";
                     group = "keys";
                   };
                   secrets.vikunja-jwt = {
-                    file = "/home/david/nix-files/security/vikunja-jwt.age";
                     mode = "0440";
                     group = "keys";
                   };
-                  secrets.taalbubbl = {
-                    file = "/home/david/nix-files/security/taalbubbl.age";
-                  };
+                  secrets.taalbubbl = {};
                 };
                 vikunja = {
                   enable = true;
@@ -78,7 +74,7 @@
                     host = "/run/postgresql";
                     port = 5432;
                   };
-                  environmentFile = config.age.secrets.taalbubbl.path;
+                  environmentFile = config.sops.secrets.taalbubbl.path;
                 };
                 wildcloud.postgresql = {
                   enable = true;
@@ -102,7 +98,7 @@
               }
               )
 
-              agenix.nixosModules.default
+              sops-nix.nixosModules.sops
               home-manager.nixosModules.home-manager
               {
                 home-manager.useGlobalPkgs = true;

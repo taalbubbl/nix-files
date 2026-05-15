@@ -138,7 +138,7 @@
    curl
    tmux
    cloudflared
-   ragenix
+   sops
    rbw
    pinentry-curses
    jq

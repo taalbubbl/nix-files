@@ -1,0 +1,15 @@
+keys:
+  # Host key for chuchichaestli
+  # Derive with: ssh-to-age < /etc/ssh/ssh_host_ed25519_key.pubC
+  - &chuchichaestli age1nwnazgryw43vs3juapdje45kxuank8xemh4daada33zw7ue7z4ms5swnfj
+
+  # Your personal key
+  # Derive with: ssh-to-age -i ~/.ssh/id_ed25519.pub
+  - &david age1v6d0g2rw963xemfv08eylcu0340ygz5k6gtav22046efrh73g94qxpx4gr
+
+creation_rules:
+  - path_regex: security/secrets\.yaml$
+    key_groups:
+      - age:
+          - *chuchichaestli
+          - *david
