@@ -30,6 +30,7 @@
               ./machines/chuchichaestli/default.nix
               ./modules/cloudflared.nix
               ./modules/nginx.nix
+              ./modules/authelia.nix
               ./modules/vikunja.nix
               ./modules/analytics.nix
               ./modules/postgresql.nix 
@@ -53,6 +54,11 @@
                     group = "keys";
                   };
                   secrets.taalbubbl = {};
+                  secrets.authelia-jwt-secret = {};
+                  secrets.authelia-session-secret = {};
+                  secrets.authelia-storage-key = {};
+                  secrets.authelia-oidc-hmac = {};
+                  secrets.authelia-oidc-private-key = {};
                 };
                 vikunja = {
                   enable = true;
