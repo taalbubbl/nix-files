@@ -8,7 +8,7 @@ with lib; let
 
   # Default values
   vikunjaDefaults = {
-    url = "vikunja.taaltaak.org";
+    url = "vikunja.taalbubbl.org";
     db_path = "/var/lib/vikunja/vikunja.db";
     files_path = "/var/lib/vikunja/files";
     port = 3456;
@@ -103,8 +103,8 @@ in {
             # The key 'authelia' determines the redirect URI: /auth/openid/authelia
             authelia = {
               name = "Authelia";
-              authurl = "https://auth.davidwild.ch";
-              logouturl = "https://auth.davidwild.ch/logout";
+              authurl = "https://auth.taalbubbl.org";
+              logouturl = "https://auth.taalbubbl.org/logout";
               clientid = "vikunja";
               clientsecret = {
                 file = config.sops.secrets.vikunja-client-secret.path;
