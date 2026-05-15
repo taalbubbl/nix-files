@@ -68,6 +68,7 @@
                   # lokiHost = "bernina";
                   # lokiPort = 3100;
                 };
+                authelia.enable = true;
               }
 
               # Separate module function — gives access to config

@@ -100,12 +100,12 @@ in {
           openid = {
             enabled = true;
            providers = {
-            # This 'authentik' key is the "mystring" / ID Vikunja uses for the redirect URL
-            authentik = {
-              name = "authentik";
-              authurl = "https://auth.davidwild.ch/application/o/vikunja/";
-              logouturl = "https://auth.davidwild.ch/application/o/vikunja/end-session/";
-              clientid = "NYytqakPqAeNuCcDmHcRcge10ADMm7o4yrxUGDau";
+            # The key 'authelia' determines the redirect URI: /auth/openid/authelia
+            authelia = {
+              name = "Authelia";
+              authurl = "https://auth.davidwild.ch";
+              logouturl = "https://auth.davidwild.ch/logout";
+              clientid = "vikunja";
               clientsecret = {
                 file = config.sops.secrets.vikunja-client-secret.path;
               };

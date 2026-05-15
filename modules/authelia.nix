@@ -6,8 +6,8 @@
 }:
 with lib; let
   autheliaDefaults = {
-    domain = "auth.davidwild.ch";
-    sessionDomain = "davidwild.ch";
+    domain = "auth.taalbubbl.org";
+    sessionDomain = "taalbubbl.org";
     port = 9091;
   };
   cfg = config.authelia // autheliaDefaults;
@@ -26,18 +26,27 @@ in {
       type = types.port;
       default = autheliaDefaults.port;
     };
+    usersFile = mkOption {
+      type = types.path;
+      default = ../security/authelia-users.yaml;
+      description = "Path to the Authelia users database file.";
+    };
   };
 
   config = mkIf cfg.enable {
-    services.nginx.virtualHosts."${cfg.domain}" = {
-      locations."/" = {
-        proxyPass = "http://127.0.0.1:${toString cfg.port}";
-        proxyWebsockets = true;
-      };
-    };
+    # services.nginx.virtualHosts."${cfg.domain}" = {
+    #   locations."/" = {
+    #     proxyPass = "http://127.0.0.1:${toString cfg.port}";
+    #     proxyWebsockets = true;
+    #   };
+    # };
 
     services.authelia.instances.main = {
       enable = true;
+      secrets = {
+        jwtSecretFile = config.sops.secrets.authelia-jwt-secret.path;
+        storageEncryptionKeyFile = config.sops.secrets.authelia-storage-key.path;
+      };
 
       settings = {
         theme = "auto";
@@ -50,7 +59,17 @@ in {
 
         log.level = "info";
 
-        authentication_backend.file.path = "/var/lib/authelia-main/users.yaml";
+        default_2fa_method = "webauthn";
+
+        webauthn = {
+          disable = false;
+          display_name = "Authelia";
+          attestation_conveyance_preference = "indirect";
+          user_verification = "required";
+          timeout = "60s";
+        };
+
+        authentication_backend.file.path = toString cfg.usersFile;
 
         session = {
           name = "authelia_session";
@@ -66,23 +85,22 @@ in {
           rules = [];
         };
 
-        identity_providers.oidc = {
-          # Add OIDC clients here, e.g.:
-          # clients = [{
-          #   id = "vikunja";
-          #   description = "Vikunja";
-          #   secret = "$pbkdf2-sha512$..."; # hashed with: authelia crypto hash generate pbkdf2
-          #   redirect_uris = [ "https://vikunja.taaltaak.org/auth/openid/authelia" ];
-          #   scopes = [ "openid" "profile" "email" "groups" ];
-          #   userinfo_signing_algorithm = "none";
-          # }];
-        };
+        identity_providers.oidc.clients = [{
+          id = "vikunja";
+          description = "Vikunja";
+          # Hash of vikunja-client-secret. Generate with:
+          # authelia crypto hash generate pbkdf2 --random
+          secret = "$pbkdf2-sha512$310000$91IwbCDI7zXRBzHeggT/Zg$L2xE6ILl5gWuZrJJl6BabxabmZtjVwt2Cz.bo4eq7qI/4E2nI8uy3p.ve34MLyD.tkSq3TdiptTWF.WOKP66Pw";
+          public = false;
+          authorization_policy = "two_factor";
+          redirect_uris = [ "https://vikunja.taaltaak.org/auth/openid/authelia" ];
+          scopes = [ "openid" "profile" "email" "groups" ];
+          userinfo_signing_algorithm = "none";
+        }];
       };
 
       environmentVariables = {
-        AUTHELIA_JWT_SECRET_FILE = config.sops.secrets.authelia-jwt-secret.path;
         AUTHELIA_SESSION_SECRET_FILE = config.sops.secrets.authelia-session-secret.path;
-        AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE = config.sops.secrets.authelia-storage-key.path;
         AUTHELIA_IDENTITY_PROVIDERS_OIDC_HMAC_SECRET_FILE = config.sops.secrets.authelia-oidc-hmac.path;
         AUTHELIA_IDENTITY_PROVIDERS_OIDC_ISSUER_PRIVATE_KEY_FILE = config.sops.secrets.authelia-oidc-private-key.path;
       };
