@@ -50,7 +50,6 @@ in {
 
       settings = {
         theme = "auto";
-        default_redirection_url = "https://${cfg.domain}";
 
         server.address = "tcp://127.0.0.1:${toString cfg.port}";
 
@@ -73,6 +72,7 @@ in {
           cookies = [{
             domain = cfg.sessionDomain;
             authelia_url = "https://${cfg.domain}";
+            default_redirection_url = "https://${cfg.domain}";
           }];
         };
 
@@ -81,13 +81,6 @@ in {
         notifier.filesystem.filename = "/var/lib/authelia-main/notification.txt";
 
         access_control.default_policy = "two_factor";
-
-        identity_providers.oidc.jwks = [{
-          key_id = "main";
-          algorithm = "RS256";
-          use = "sig";
-          key.path = config.sops.secrets.authelia-oidc-private-key.path;
-        }];
 
         identity_providers.oidc.clients = [{
           client_id = "vikunja";
@@ -106,6 +99,7 @@ in {
       environmentVariables = {
         AUTHELIA_SESSION_SECRET_FILE = config.sops.secrets.authelia-session-secret.path;
         AUTHELIA_IDENTITY_PROVIDERS_OIDC_HMAC_SECRET_FILE = config.sops.secrets.authelia-oidc-hmac.path;
+        AUTHELIA_IDENTITY_PROVIDERS_OIDC_ISSUER_PRIVATE_KEY_FILE = config.sops.secrets.authelia-oidc-private-key.path;
       };
     };
 
