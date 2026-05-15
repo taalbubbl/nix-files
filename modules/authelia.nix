@@ -70,7 +70,10 @@ in {
 
         session = {
           name = "authelia_session";
-          domain = cfg.sessionDomain;
+          cookies = [{
+            domain = cfg.sessionDomain;
+            authelia_url = "https://${cfg.domain}";
+          }];
         };
 
         storage.local.path = "/var/lib/authelia-main/db.sqlite3";
@@ -78,6 +81,13 @@ in {
         notifier.filesystem.filename = "/var/lib/authelia-main/notification.txt";
 
         access_control.default_policy = "two_factor";
+
+        identity_providers.oidc.jwks = [{
+          key_id = "main";
+          algorithm = "RS256";
+          use = "sig";
+          key.path = config.sops.secrets.authelia-oidc-private-key.path;
+        }];
 
         identity_providers.oidc.clients = [{
           client_id = "vikunja";
@@ -96,7 +106,6 @@ in {
       environmentVariables = {
         AUTHELIA_SESSION_SECRET_FILE = config.sops.secrets.authelia-session-secret.path;
         AUTHELIA_IDENTITY_PROVIDERS_OIDC_HMAC_SECRET_FILE = config.sops.secrets.authelia-oidc-hmac.path;
-        AUTHELIA_IDENTITY_PROVIDERS_OIDC_ISSUER_PRIVATE_KEY_FILE = config.sops.secrets.authelia-oidc-private-key.path;
       };
     };
 
