@@ -52,10 +52,7 @@ in {
         theme = "auto";
         default_redirection_url = "https://${cfg.domain}";
 
-        server = {
-          host = "127.0.0.1";
-          port = cfg.port;
-        };
+        server.address = "tcp://127.0.0.1:${toString cfg.port}";
 
         log.level = "info";
 
@@ -65,7 +62,7 @@ in {
           disable = false;
           display_name = "Authelia";
           attestation_conveyance_preference = "indirect";
-          user_verification = "required";
+          selection_criteria.user_verification = "required";
           timeout = "60s";
         };
 
@@ -80,22 +77,19 @@ in {
 
         notifier.filesystem.filename = "/var/lib/authelia-main/notification.txt";
 
-        access_control = {
-          default_policy = "deny";
-          rules = [];
-        };
+        access_control.default_policy = "two_factor";
 
         identity_providers.oidc.clients = [{
-          id = "vikunja";
-          description = "Vikunja";
+          client_id = "vikunja";
+          client_name = "Vikunja";
           # Hash of vikunja-client-secret. Generate with:
           # authelia crypto hash generate pbkdf2 --random
-          secret = "$pbkdf2-sha512$310000$91IwbCDI7zXRBzHeggT/Zg$L2xE6ILl5gWuZrJJl6BabxabmZtjVwt2Cz.bo4eq7qI/4E2nI8uy3p.ve34MLyD.tkSq3TdiptTWF.WOKP66Pw";
+          client_secret = "$pbkdf2-sha512$310000$91IwbCDI7zXRBzHeggT/Zg$L2xE6ILl5gWuZrJJl6BabxabmZtjVwt2Cz.bo4eq7qI/4E2nI8uy3p.ve34MLyD.tkSq3TdiptTWF.WOKP66Pw";
           public = false;
           authorization_policy = "two_factor";
           redirect_uris = [ "https://vikunja.taaltaak.org/auth/openid/authelia" ];
           scopes = [ "openid" "profile" "email" "groups" ];
-          userinfo_signing_algorithm = "none";
+          userinfo_signed_response_alg = "none";
         }];
       };
 
