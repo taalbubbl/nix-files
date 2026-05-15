@@ -54,11 +54,11 @@
                     group = "keys";
                   };
                   secrets.taalbubbl = {};
-                  secrets.authelia-jwt-secret = {};
-                  secrets.authelia-session-secret = {};
-                  secrets.authelia-storage-key = {};
-                  secrets.authelia-oidc-hmac = {};
-                  secrets.authelia-oidc-private-key = {};
+                  secrets.authelia-jwt-secret = { owner = "authelia-main"; };
+                  secrets.authelia-session-secret = { owner = "authelia-main"; };
+                  secrets.authelia-storage-key = { owner = "authelia-main"; };
+                  secrets.authelia-oidc-hmac = { owner = "authelia-main"; };
+                  secrets.authelia-oidc-private-key = { owner = "authelia-main"; };
                 };
                 vikunja = {
                   enable = true;
