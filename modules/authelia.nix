@@ -34,12 +34,12 @@ in {
   };
 
   config = mkIf cfg.enable {
-    # services.nginx.virtualHosts."${cfg.domain}" = {
-    #   locations."/" = {
-    #     proxyPass = "http://127.0.0.1:${toString cfg.port}";
-    #     proxyWebsockets = true;
-    #   };
-    # };
+    services.nginx.virtualHosts."${cfg.domain}" = {
+      locations."/" = {
+        proxyPass = "http://127.0.0.1:${toString cfg.port}";
+        proxyWebsockets = true;
+      };
+    };
 
     services.authelia.instances.main = {
       enable = true;
@@ -102,6 +102,6 @@ in {
       };
     };
 
-    networking.firewall.allowedTCPPorts = [cfg.port];
+    # Port only accessible via nginx — not opened in firewall directly.
   };
 }

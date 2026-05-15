@@ -8,6 +8,7 @@
         ingress = {
           "taaltaak.org" = "http://localhost:80";
           "*.taaltaak.org" = "http://127.0.0.1:80";
+          "auth.taalbubbl.org" = "http://127.0.0.1:80";
         };
       };
       };
