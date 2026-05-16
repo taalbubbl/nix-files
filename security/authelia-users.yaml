@@ -13,7 +13,7 @@ users:
     email: "markus.knell.mk@gmail.com"
   mika:
     displayname: "Mika"
-    password: "$argon2id$v=19$m=65536,t=3,p=4$1jA2YdrFm/x6eOVNf9+pSQ$EjJAn4pX4UlJ4+TGqac+Mqu5KKH0SIp2B9UCYGyqD0"
+    password: "$argon2id$v=19$m=65536,t=3,p=4$+f88ud9NwJhsjzMPstnsfQ$mBUFt/BU94uDUmAE8iYhlnVVwhEcLS4GVPmZRABomJw"
     email: "mikabuijs@ziggo.nl"
   regina:
     displayname: "Regina"
