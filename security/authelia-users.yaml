@@ -7,3 +7,23 @@ users:
     email: "contact@davidwild.ch"
     groups:
       - admins
+  markus:
+    displayname: "Markus"
+    password: "$argon2id$v=19$m=65536,t=3,p=4$3NfNtTRVArsaf9CvLB+1Ng$FlIvl/5OfeTPeBWa9iN2k8ODColrhC5U/K5/ZjGdRSo"
+    email: "markus.knell.mk@gmail.com"
+  mika:
+    displayname: "Mika"
+    password: "$argon2id$v=19$m=65536,t=3,p=4$1jA2YdrFm/x6eOVNf9+pSQ$EjJAn4pX4UlJ4+TGqac+Mqu5KKH0SIp2B9UCYGyqD0"
+    email: "mikabuijs@ziggo.nl"
+  regina:
+    displayname: "Regina"
+    password: "$argon2id$v=19$m=65536,t=3,p=4$M+Kk/j+VSbEWTrzZ6pC5FA$U5VuUZJU58ONxP3sX/OubFDcsL6ZWt0HOZID5wyEprE"
+    email: "rjarillo303@gmail.com"
+  scarlett:
+    displayname: "Scarlett"
+    password: "$argon2id$v=19$m=65536,t=3,p=4$Pb0Qd6LssUbdAx9X2ZdIjQ$guXa+SM2GpgsuWJKwDNdfLWmrJh9Ofz6t8ki1nQXMrU"
+    email: "scarlett.kim1sss@gmail.com"
+  tonda:
+    displayname: "Tonda"
+    password: "$argon2id$v=19$m=65536,t=3,p=4$GUqRsYZlDVnew9U4e1foKg$9cdIJAxEuIT+v8LjXyzwVaTXlx7w4me0oD+8BwIQcoQ"
+    email: "tes.antonin@gmail.com"
