@@ -79,6 +79,7 @@ in {
           client_secret = "$pbkdf2-sha512$310000$91IwbCDI7zXRBzHeggT/Zg$L2xE6ILl5gWuZrJJl6BabxabmZtjVwt2Cz.bo4eq7qI/4E2nI8uy3p.ve34MLyD.tkSq3TdiptTWF.WOKP66Pw";
           public = false;
           authorization_policy = "one_factor";
+          token_endpoint_auth_method = "client_secret_post";
           redirect_uris = [ "https://vikunja.taalbubbl.org/auth/openid/authelia" ];
           scopes = [ "openid" "profile" "email" "groups" ];
           userinfo_signed_response_alg = "none";
