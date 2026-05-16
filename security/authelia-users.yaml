@@ -3,7 +3,7 @@ users:
     displayname: "david"
     # Generate password hash with:
     # nix run nixpkgs#authelia -- crypto hash generate argon2 --random --random.length 72
-    password: "$argon2id$v=19$m=65536,t=3,p=4$BxCT8BsOterdtka8TzUlJA$/5JmePLLaynO5ef4hffXXCtdyO29wh6Xvx9ppDFXV2Y"
+    password: "$argon2id$v=19$m=65536,t=3,p=4$GtmgRCAfFmK/yRT9ojX1lw$RjIV4RsHOULiycYNbXFyGzRUDhVnWjja9JTWZjWWG0A"
     email: "contact@davidwild.ch"
     groups:
       - admins
