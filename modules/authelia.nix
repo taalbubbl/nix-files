@@ -55,16 +55,6 @@ in {
 
         log.level = "info";
 
-        default_2fa_method = "webauthn";
-
-        webauthn = {
-          disable = false;
-          display_name = "Authelia";
-          attestation_conveyance_preference = "indirect";
-          selection_criteria.user_verification = "required";
-          timeout = "60s";
-        };
-
         authentication_backend.file.path = toString cfg.usersFile;
 
         session = {
@@ -79,7 +69,7 @@ in {
 
         notifier.filesystem.filename = "/var/lib/authelia-main/notification.txt";
 
-        access_control.default_policy = "two_factor";
+        access_control.default_policy = "one_factor";
 
         identity_providers.oidc.clients = [{
           client_id = "vikunja";
@@ -88,7 +78,7 @@ in {
           # authelia crypto hash generate pbkdf2 --random
           client_secret = "$pbkdf2-sha512$310000$91IwbCDI7zXRBzHeggT/Zg$L2xE6ILl5gWuZrJJl6BabxabmZtjVwt2Cz.bo4eq7qI/4E2nI8uy3p.ve34MLyD.tkSq3TdiptTWF.WOKP66Pw";
           public = false;
-          authorization_policy = "two_factor";
+          authorization_policy = "one_factor";
           redirect_uris = [ "https://vikunja.taalbubbl.org/auth/openid/authelia" ];
           scopes = [ "openid" "profile" "email" "groups" ];
           userinfo_signed_response_alg = "none";
