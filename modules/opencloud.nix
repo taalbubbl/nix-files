@@ -17,8 +17,8 @@ with lib; let
   internal_host = "127.0.0.1";
   opencould_port = 9200;
   wopi_port = 9300;
-  onlyoffice_url = "https://office.davidwild.ch";
-  opencloud_url = "https://cloud.davidwild.ch";
+  onlyoffice_url = "https://office.taalbubbl.org";
+  opencloud_url = "https://cloud.taalbubbl.org";
   hostname = "taalbubbl.org";
   cfg = config.cloud;
 in {
