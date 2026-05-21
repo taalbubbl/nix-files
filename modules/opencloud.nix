@@ -29,7 +29,6 @@ in {
     };
     config_file = mkOption {
       type = types.str;
-      default = "";
     };
     port = mkOption {
       type = types.port;
