@@ -82,7 +82,7 @@ in {
   };
 
   settings = {
-    log.level = "info";
+    log.level = "debug";
 
     proxy = {
       http.addr = "${internal_host}:${toString opencould_port}";
@@ -104,7 +104,7 @@ in {
         issuer = "https://auth.${hostname}";
         rewrite_well_known = true;
         skip_user_info = false;
-        access_token_verify_method = "none";
+        access_token_verify_method = "jwt";
       };
     };
 
