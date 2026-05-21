@@ -72,8 +72,8 @@ in {
   environment = {
     # --- Global / OIDC Core ---
     OC_URL = cfg.domain;
-    OC_OIDC_ISSUER = "https://auth.${host}";
-    PROXY_OIDC_ISSUER = "https://auth.${host}";
+    OC_OIDC_ISSUER = "https://auth.${hostname}";
+    PROXY_OIDC_ISSUER = "https://auth.${hostname}";
     OC_EXCLUDE_RUN_SERVICES = "idp";
     OC_ADD_RUN_SERVICES = "collaboration";
     OC_LOG_LEVEL = "info";
@@ -102,8 +102,8 @@ in {
 
     # --- Web Frontend & CSP ---
     WEB_OIDC_CLIENT_ID = "opencloud";
-    WEB_OIDC_AUTHORITY = "https://auth.${host}";
-    WEB_OIDC_METADATA_URL = "https://auth.${host}/.well-known/openid-configuration";
+    WEB_OIDC_AUTHORITY = "https://auth.${hostname}";
+    WEB_OIDC_METADATA_URL = "https://auth.${hostname}/.well-known/openid-configuration";
     PROXY_CSP_CONFIG_FILE_LOCATION = "/etc/opencloud/csp.yaml";
 
 
@@ -112,7 +112,7 @@ in {
     COLLABORATION_APP_NAME =  mkIf cfg.enable_onlyoffice "OnlyOffice";
 		COLLABORATION_APP_PRODUCT =  mkIf cfg.enable_onlyoffice "OnlyOffice";
  
-		COLLABORATION_WOPI_SRC =  mkIf cfg.enable_onlyoffice "https://wopi.${host}";
+		COLLABORATION_WOPI_SRC =  mkIf cfg.enable_onlyoffice "https://wopi.${hostname}";
 		COLLABORATION_APP_ADDR =   mkIf cfg.enable_onlyoffice onlyoffice_url; 
 		COLLABORATION_APP_INSECURE =  mkIf cfg.enable_onlyoffice "true";
     COLLABORATION_LOG_LEVEL =  mkIf cfg.enable_onlyoffice "info";
@@ -220,7 +220,7 @@ in {
 
   security.acme.acceptTerms = true;
   services.nginx = {    
-    virtualHosts."office.${host}" = {
+    virtualHosts."office.${hostname}" = {
       forceSSL = true; # Force browsers to stay on HTTPS
       enableACME = true;
       locations."/" = {
@@ -229,7 +229,7 @@ in {
       };
     };
 
-    virtualHosts."cloud.${host}" = {
+    virtualHosts."cloud.${hostname}" = {
       forceSSL = true;
       enableACME = true;
   
@@ -287,7 +287,7 @@ in {
     };
   
 
-  virtualHosts."wopi.${host}" = {
+  virtualHosts."wopi.${hostname}" = {
     enableACME = true;
     forceSSL = true;
     locations."/" = {
