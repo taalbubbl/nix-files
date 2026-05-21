@@ -71,6 +71,9 @@ in {
     OC_ADD_RUN_SERVICES = "collaboration";
     # Running behind a reverse proxy — disable TLS on the OpenCloud listener
     PROXY_TLS = "false";
+    # Env vars take precedence over settings file — ensure proxy uses Authelia, not itself
+    OC_OIDC_ISSUER = "https://auth.${hostname}";
+    PROXY_OIDC_ISSUER = "https://auth.${hostname}";
     # Secrets must be env vars (sops writes a file, not an inline value)
     OC_JWT_SECRET_FILE = config.sops.secrets.opencloud-jwt-secret.path;
     COLLABORATION_JWT_SECRET_FILE = mkIf cfg.enable_onlyoffice config.sops.secrets.opencloud-collab-secret.path;
@@ -94,7 +97,7 @@ in {
       autoprovision_claim_displayname = "name";
       oidc = {
         issuer = "https://auth.${hostname}";
-        rewrite_well_known = false;
+        rewrite_well_known = true;
         skip_user_info = false;
         access_token_verify_method = "none";
       };
