@@ -89,9 +89,8 @@ in {
           userinfo_signed_response_alg = "none";
         }
         {
-          client_id = "opencloud";
+          client_id = "web";
           client_name = "OpenCloud";
-          # Public client — no client_secret needed (web SPA uses PKCE)
           public = true;
           authorization_policy = "one_factor";
           require_pkce = true;
