@@ -19,7 +19,7 @@ with lib; let
   wopi_port = 9300;
   onlyoffice_url = "https://office.davidwild.ch";
   opencloud_url = "https://cloud.davidwild.ch";
-  host = "taalbubbl.org";
+  hostname = "taalbubbl.org";
   cfg = config.cloud;
 in {
   options.cloud = {
@@ -29,6 +29,7 @@ in {
     };
     config_file = mkOption {
       type = types.str;
+      default = "";
     };
     port = mkOption {
       type = types.port;
