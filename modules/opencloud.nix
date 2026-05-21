@@ -89,7 +89,10 @@ in {
       https_addr = opencloud_url;
       csp_config_file_location = "/etc/opencloud/csp.yaml";
       auto_provision_accounts = true;
-      role_assignment.driver = "default";
+      role_assignment = {
+        driver = "claims";
+        oidc_role_claim = "groups";
+      };
       user_oidc_claim = "preferred_username";
       user_cs3_claim = "username";
       autoprovision_claim_username = "preferred_username";

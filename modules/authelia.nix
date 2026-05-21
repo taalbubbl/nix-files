@@ -104,7 +104,7 @@ in {
             "https://cloud.taalbubbl.org/oidc-callback.html"
             "https://cloud.taalbubbl.org/oidc-silent-redirect.html"
           ];
-          scopes = [ "openid" "profile" "email" ];
+          scopes = [ "openid" "profile" "email" "groups" ];
           response_types = [ "code" ];
           grant_types = [ "authorization_code" "refresh_token" ];
           userinfo_signed_response_alg = "none";
