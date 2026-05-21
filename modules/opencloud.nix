@@ -27,9 +27,6 @@ in {
     data_dir = mkOption {
       type = types.str;
     };
-    config_file = mkOption {
-      type = types.str;
-    };
     port = mkOption {
       type = types.port;
       default = opencould_port;
@@ -68,85 +65,65 @@ in {
       port = cfg.port;
       stateDir = cfg.data_dir;
 
-  # We use environment variables for everything possible to keep the config clean.
   environment = {
-    # --- Global / OIDC Core ---
-    OC_URL = cfg.domain;
-    OC_OIDC_ISSUER = "https://auth.${hostname}";
-    PROXY_OIDC_ISSUER = "https://auth.${hostname}";
+    # Service wiring — no YAML config equivalent in the NixOS module
     OC_EXCLUDE_RUN_SERVICES = "idp";
     OC_ADD_RUN_SERVICES = "collaboration";
-    OC_LOG_LEVEL = "info";
-    PROXY_TLS = "false";
-    HTTP_TLS = "false";
+    # Secrets must be env vars (sops writes a file, not an inline value)
     OC_JWT_SECRET_FILE = config.sops.secrets.opencloud-jwt-secret.path;
-    
-    STORAGE_USERS_DRIVER = "ocis";
-    STORAGE_METADATA_DRIVER = "ocis";
-
-
-    PROXY_EXTERNAL_ADDR = opencloud_url;
-    PROXY_AUTOPROVISION_ACCOUNTS = "true";         # Create user on first login
-
-    # --- Role Assignment (Environment Version) ---
-    # We set this here to ensure it wins over any stray file configs
-    PROXY_ROLE_ASSIGNMENT_DRIVER = "default"; 
-
-    # --- User Mapping ---
-    PROXY_AUTOPROVISION_CLAIM_USERNAME = "preferred_username";
-    PROXY_AUTOPROVISION_CLAIM_EMAIL = "email";
-    PROXY_AUTOPROVISION_CLAIM_DISPLAYNAME = "name";
-    PROXY_USER_OIDC_CLAIM = "preferred_username";
-    PROXY_USER_CS3_CLAIM = "username";
-    PROXY_HTTP_ADDR = "${internal_host}:${toString opencould_port}";
-
-    # --- Web Frontend & CSP ---
-    WEB_OIDC_CLIENT_ID = "opencloud";
-    WEB_OIDC_AUTHORITY = "https://auth.${hostname}";
-    WEB_OIDC_METADATA_URL = "https://auth.${hostname}/.well-known/openid-configuration";
-    PROXY_CSP_CONFIG_FILE_LOCATION = "/etc/opencloud/csp.yaml";
-
-
-    FRONTEND_APP_HANDLER_VIEW_APP_ADDR =  mkIf cfg.enable_onlyoffice "eu.opencloud.api.collaboration";
-    COLLABORA_DOMAIN =  mkIf cfg.enable_onlyoffice "office.davidwild.ch";
-    COLLABORATION_APP_NAME =  mkIf cfg.enable_onlyoffice "OnlyOffice";
-		COLLABORATION_APP_PRODUCT =  mkIf cfg.enable_onlyoffice "OnlyOffice";
- 
-		COLLABORATION_WOPI_SRC =  mkIf cfg.enable_onlyoffice "https://wopi.${hostname}";
-		COLLABORATION_APP_ADDR =   mkIf cfg.enable_onlyoffice onlyoffice_url; 
-		COLLABORATION_APP_INSECURE =  mkIf cfg.enable_onlyoffice "true";
-    COLLABORATION_LOG_LEVEL =  mkIf cfg.enable_onlyoffice "info";
     COLLABORATION_JWT_SECRET_FILE = mkIf cfg.enable_onlyoffice config.sops.secrets.opencloud-collab-secret.path;
-    COLLABORATION_CS3API_DATAGATEWAY_INSECURE =  mkIf cfg.enable_onlyoffice "true";
-
     COLLABORATION_OO_SECRET_FILE = config.sops.secrets.opencloud-collab-secret.path;
-    
-    PROXY_OIDC_ACCESS_TOKEN_VERIFY_METHOD = "none"; 
-    PROXY_OIDC_SKIP_USER_INFO = "false"; # Changed to true to fix 401 errors
-    # MICRO_REGISTRY = "nats-js-kv";
-    # MICRO_REGISTRY_ADDRESS = "127.0.0.1:9233";
-    # GODEBUG="netdns=go";
-    # OC_CHECK_REACHABILITY = "false";
-    OC_SYSTEM_USER_ID = "akadmin";
   };
-  # Only use settings for complex nested structures like role mapping
+
   settings = {
-    web.web.config = {
-      oidc = {
-        
-      };
-    };
+    log.level = "info";
+
     proxy = {
+      http.addr = "${internal_host}:${toString opencould_port}";
+      tls = false;
+      https_addr = opencloud_url;
+      csp_config_file_location = "/etc/opencloud/csp.yaml";
       auto_provision_accounts = true;
+      role_assignment.driver = "default";
+      user_oidc_claim = "preferred_username";
+      user_cs3_claim = "username";
+      autoprovision_claim_username = "preferred_username";
+      autoprovision_claim_email = "email";
+      autoprovision_claim_displayname = "name";
       oidc = {
+        issuer = "https://auth.${hostname}";
         rewrite_well_known = true;
         skip_user_info = false;
-      };
-      role_assignment = {
-        driver = "default"; 
+        access_token_verify_method = "none";
       };
     };
 
+    storage_users.driver = "ocis";
+    storage.metadata_driver = "ocis";
+
+    web.web.config.oidc = {
+      authority = "https://auth.${hostname}";
+      metadata_url = "https://auth.${hostname}/.well-known/openid-configuration";
+      client_id = "opencloud";
+      scope = "openid profile email";
+    };
+
+    system_user.id = "akadmin";
+
+    collaboration = mkIf cfg.enable_onlyoffice {
+      log.level = "info";
+      app = {
+        name = "OnlyOffice";
+        product = "OnlyOffice";
+        addr = onlyoffice_url;
+        insecure = true;
+      };
+      wopi.src = "https://wopi.${hostname}";
+      cs3api.datagateway.insecure = true;
+    };
+
+    frontend.app_handler.view_app_addr = mkIf cfg.enable_onlyoffice "eu.opencloud.api.collaboration";
+    };
     };
     };
     environment.etc."opencloud/csp.yaml".text = mkIf cfg.enable_onlyoffice ''
