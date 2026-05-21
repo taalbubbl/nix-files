@@ -69,6 +69,8 @@ in {
     # Service wiring — no YAML config equivalent in the NixOS module
     OC_EXCLUDE_RUN_SERVICES = "idp";
     OC_ADD_RUN_SERVICES = "collaboration";
+    # Running behind a reverse proxy — disable TLS on the OpenCloud listener
+    PROXY_TLS = "false";
     # Secrets must be env vars (sops writes a file, not an inline value)
     OC_JWT_SECRET_FILE = config.sops.secrets.opencloud-jwt-secret.path;
     COLLABORATION_JWT_SECRET_FILE = mkIf cfg.enable_onlyoffice config.sops.secrets.opencloud-collab-secret.path;
