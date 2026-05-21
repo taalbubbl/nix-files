@@ -125,7 +125,6 @@ in {
     frontend.app_handler.view_app_addr = mkIf cfg.enable_onlyoffice "eu.opencloud.api.collaboration";
     };
     };
-    };
     environment.etc."opencloud/csp.yaml".text = mkIf cfg.enable_onlyoffice ''
       directives:
         connect-src:
