@@ -31,9 +31,10 @@
               ./modules/cloudflared.nix
               ./modules/nginx.nix
               ./modules/authelia.nix
+              ./modules/opencloud.nix
               ./modules/vikunja.nix
               ./modules/analytics.nix
-              ./modules/postgresql.nix 
+              ./modules/postgresql.nix
               ./modules/pgbackrest-exporter.nix
 
               # Plain attribute set — no config references needed here
@@ -59,6 +60,8 @@
                   secrets.authelia-storage-key = { owner = "authelia-main"; };
                   secrets.authelia-oidc-hmac = { owner = "authelia-main"; };
                   secrets.authelia-oidc-private-key = { owner = "authelia-main"; };
+                  secrets.opencloud-jwt-secret = { owner = "opencloud"; };
+                  secrets.opencloud-collab-secret = { owner = "opencloud"; };
                 };
                 vikunja = {
                   enable = true;
@@ -69,6 +72,14 @@
                   # lokiPort = 3100;
                 };
                 authelia.enable = true;
+                cloud = {
+                  enable =true;
+                  data_dir = "/var/lib/opencloud";
+                  enable_onlyoffice = true;
+                  enable_radicale = false;
+                  path_radicale = "//var/lib/radicale/";
+                  #config_file = "/data1/ocis/config/";
+                };
               }
 
               # Separate module function — gives access to config

@@ -19,7 +19,7 @@ with lib; let
   wopi_port = 9300;
   onlyoffice_url = "https://office.davidwild.ch";
   opencloud_url = "https://cloud.davidwild.ch";
-  host = "davidwild.ch";
+  host = "taalbubbl.org";
   cfg = config.cloud;
 in {
   options.cloud = {
@@ -72,14 +72,14 @@ in {
   environment = {
     # --- Global / OIDC Core ---
     OC_URL = cfg.domain;
-    OC_OIDC_ISSUER = "https://auth.davidwild.ch/application/o/opencloud/";
-    PROXY_OIDC_ISSUER = "https://auth.davidwild.ch/application/o/opencloud/";
+    OC_OIDC_ISSUER = "https://auth.${host}";
+    PROXY_OIDC_ISSUER = "https://auth.${host}";
     OC_EXCLUDE_RUN_SERVICES = "idp";
     OC_ADD_RUN_SERVICES = "collaboration";
     OC_LOG_LEVEL = "info";
     PROXY_TLS = "false";
     HTTP_TLS = "false";
-    OC_JWT_SECRET = "whatever";
+    OC_JWT_SECRET_FILE = config.sops.secrets.opencloud-jwt-secret.path;
     
     STORAGE_USERS_DRIVER = "ocis";
     STORAGE_METADATA_DRIVER = "ocis";
@@ -101,9 +101,9 @@ in {
     PROXY_HTTP_ADDR = "${internal_host}:${toString opencould_port}";
 
     # --- Web Frontend & CSP ---
-    WEB_OIDC_CLIENT_ID = "9jFTfaHSUZuztAPiiGu6dYciLDyeIRkXsixnZsxx";
-    WEB_OIDC_AUTHORITY = opencloud_url;
-    WEB_OIDC_METADATA_URL = "${opencloud_url}/.well-known/openid-configuration";
+    WEB_OIDC_CLIENT_ID = "opencloud";
+    WEB_OIDC_AUTHORITY = "https://auth.${host}";
+    WEB_OIDC_METADATA_URL = "https://auth.${host}/.well-known/openid-configuration";
     PROXY_CSP_CONFIG_FILE_LOCATION = "/etc/opencloud/csp.yaml";
 
 
@@ -112,14 +112,14 @@ in {
     COLLABORATION_APP_NAME =  mkIf cfg.enable_onlyoffice "OnlyOffice";
 		COLLABORATION_APP_PRODUCT =  mkIf cfg.enable_onlyoffice "OnlyOffice";
  
-		COLLABORATION_WOPI_SRC =  mkIf cfg.enable_onlyoffice "https://wopi.davidwild.ch";
+		COLLABORATION_WOPI_SRC =  mkIf cfg.enable_onlyoffice "https://wopi.${host}";
 		COLLABORATION_APP_ADDR =   mkIf cfg.enable_onlyoffice onlyoffice_url; 
 		COLLABORATION_APP_INSECURE =  mkIf cfg.enable_onlyoffice "true";
     COLLABORATION_LOG_LEVEL =  mkIf cfg.enable_onlyoffice "info";
-    COLLABORATION_JWT_SECRET =  mkIf cfg.enable_onlyoffice "whatever";
+    COLLABORATION_JWT_SECRET_FILE = mkIf cfg.enable_onlyoffice config.sops.secrets.opencloud-collab-secret.path;
     COLLABORATION_CS3API_DATAGATEWAY_INSECURE =  mkIf cfg.enable_onlyoffice "true";
-    
-    COLLABORATION_OO_SECRET = "whatever";
+
+    COLLABORATION_OO_SECRET_FILE = config.sops.secrets.opencloud-collab-secret.path;
     
     PROXY_OIDC_ACCESS_TOKEN_VERIFY_METHOD = "none"; 
     PROXY_OIDC_SKIP_USER_INFO = "false"; # Changed to true to fix 401 errors
@@ -220,7 +220,7 @@ in {
 
 
   services.nginx = {    
-    virtualHosts."office.davidwild.ch" = {
+    virtualHosts."office.${host}" = {
       forceSSL = true; # Force browsers to stay on HTTPS
       enableACME = true;
       locations."/" = {
@@ -229,7 +229,7 @@ in {
       };
     };
 
-    virtualHosts."cloud.davidwild.ch" = {
+    virtualHosts."cloud.${host}" = {
       forceSSL = true;
       enableACME = true;
   
@@ -287,7 +287,7 @@ in {
     };
   
 
-  virtualHosts."wopi.davidwild.ch" = {
+  virtualHosts."wopi.${host}" = {
     enableACME = true;
     forceSSL = true;
     locations."/" = {

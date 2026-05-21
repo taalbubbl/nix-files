@@ -71,7 +71,8 @@ in {
 
         access_control.default_policy = "one_factor";
 
-        identity_providers.oidc.clients = [{
+        identity_providers.oidc.clients = [
+          {
           client_id = "vikunja";
           client_name = "Vikunja";
           # Hash of vikunja-client-secret. Generate with:
@@ -86,7 +87,25 @@ in {
           response_types = [ "code" ];
           grant_types = [ "authorization_code" ];
           userinfo_signed_response_alg = "none";
-        }];
+        }
+        {
+          client_id = "opencloud";
+          client_name = "OpenCloud";
+          # Public client — no client_secret needed (web SPA uses PKCE)
+          public = true;
+          authorization_policy = "one_factor";
+          require_pkce = true;
+          token_endpoint_auth_method = "none";
+          redirect_uris = [
+            "https://cloud.taalbubbl.org/oidc-callback.html"
+            "https://cloud.taalbubbl.org/oidc-silent-redirect.html"
+          ];
+          scopes = [ "openid" "profile" "email" ];
+          response_types = [ "code" ];
+          grant_types = [ "authorization_code" "refresh_token" ];
+          userinfo_signed_response_alg = "none";
+        }
+        ];
       };
 
       environmentVariables = {
