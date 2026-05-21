@@ -69,8 +69,9 @@ in {
     # Service wiring — no YAML config equivalent in the NixOS module
     OC_EXCLUDE_RUN_SERVICES = "idp";
     OC_ADD_RUN_SERVICES = "collaboration";
-    # Running behind a reverse proxy — disable TLS on the OpenCloud listener
+    # Running behind a reverse proxy
     PROXY_TLS = "false";
+    OC_INSECURE = "true";
     # Env vars take precedence over settings file — ensure proxy uses Authelia, not itself
     OC_OIDC_ISSUER = "https://auth.${hostname}";
     PROXY_OIDC_ISSUER = "https://auth.${hostname}";
@@ -93,6 +94,7 @@ in {
         driver = "oidc";
         oidc_role_mapper.role_claim = "groups";
       };
+
       user_oidc_claim = "preferred_username";
       user_cs3_claim = "username";
       autoprovision_claim_username = "preferred_username";
@@ -112,8 +114,8 @@ in {
     web.web.config.oidc = {
       authority = "https://auth.${hostname}";
       metadata_url = "https://auth.${hostname}/.well-known/openid-configuration";
-      client_id = "opencloud";
-      scope = "openid profile email";
+      client_id = "web";
+      scope = "openid profile email groups";
     };
 
     system_user.id = "akadmin";
