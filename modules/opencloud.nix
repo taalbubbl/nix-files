@@ -90,8 +90,8 @@ in {
       csp_config_file_location = "/etc/opencloud/csp.yaml";
       auto_provision_accounts = true;
       role_assignment = {
-        driver = "claims";
-        oidc_role_claim = "groups";
+        driver = "oidc";
+        oidc_role_mapper.role_claim = "groups";
       };
       user_oidc_claim = "preferred_username";
       user_cs3_claim = "username";
