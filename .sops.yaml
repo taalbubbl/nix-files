@@ -1,6 +1,6 @@
 keys:
   # Host key for chuchichaestli
-  # Derive with: ssh-to-age < /etc/ssh/ssh_host_ed25519_key.pubC
+  # Derive with: ssh-to-age < /etc/ssh/ssh_host_ed25519_key.pub
   - &chuchichaestli age1nwnazgryw43vs3juapdje45kxuank8xemh4daada33zw7ue7z4ms5swnfj
 
   # Your personal key
