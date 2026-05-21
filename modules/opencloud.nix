@@ -94,7 +94,7 @@ in {
       autoprovision_claim_displayname = "name";
       oidc = {
         issuer = "https://auth.${hostname}";
-        rewrite_well_known = true;
+        rewrite_well_known = false;
         skip_user_info = false;
         access_token_verify_method = "none";
       };
