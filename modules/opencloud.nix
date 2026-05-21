@@ -218,7 +218,7 @@ in {
   # };
   
 
-
+  security.acme.acceptTerms = true;
   services.nginx = {    
     virtualHosts."office.${host}" = {
       forceSSL = true; # Force browsers to stay on HTTPS
@@ -294,7 +294,7 @@ in {
       proxyPass = "http://localhost:${toString wopi_port}";
     };
   };
-  security.acme.acceptTerms = true;
+  
   };
   
     virtualisation.oci-containers = {
