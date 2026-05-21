@@ -71,6 +71,11 @@ in {
 
         access_control.default_policy = "one_factor";
 
+        identity_providers.oidc.cors = {
+          endpoints = [ "authorization" "token" "userinfo" "introspection" "revocation" ];
+          allowed_origins_from_client_redirect_uris = true;
+        };
+
         identity_providers.oidc.clients = [
           {
           client_id = "vikunja";

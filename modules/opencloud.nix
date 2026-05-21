@@ -130,13 +130,14 @@ in {
     frontend.app_handler.view_app_addr = mkIf cfg.enable_onlyoffice "eu.opencloud.api.collaboration";
     };
     };
-    environment.etc."opencloud/csp.yaml".text = mkIf cfg.enable_onlyoffice ''
+    environment.etc."opencloud/csp.yaml".text = ''
       directives:
         connect-src:
           - "'self'"
           - "blob:"
           - "https://raw.githubusercontent.com/opencloud-eu/awesome-apps/"
           - "https://*.${hostname}"
+          ${optionalString cfg.enable_onlyoffice "- \"https://office.${hostname}\""}
         script-src:
           - "'self'"
           - "'unsafe-inline'"
@@ -150,9 +151,9 @@ in {
         frame-src:
           - "'self'"
           - "blob:"
-          - "https://embed.diagrams.net/"
           - "https://docs.opencloud.eu"
           - "https://*.${hostname}"
+          ${optionalString cfg.enable_onlyoffice "- \"https://embed.diagrams.net/\""}
         img-src:
           - "'self'"
           - "data:"
