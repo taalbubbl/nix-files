@@ -294,6 +294,7 @@ in {
       proxyPass = "http://localhost:${toString wopi_port}";
     };
   };
+  security.acme.acceptTerms = true;
   };
   
     virtualisation.oci-containers = {
