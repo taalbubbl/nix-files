@@ -76,6 +76,14 @@ in {
           allowed_origins_from_client_redirect_uris = true;
         };
 
+        # Authelia 4.39+ no longer auto-includes the groups claim — must be declared here
+        identity_providers.oidc.claims_policies = {
+          opencloud_policy = {
+            id_token = [ "groups" "email" "email_verified" "preferred_username" "name" ];
+            access_token = [ "groups" "email" "preferred_username" ];
+          };
+        };
+
         identity_providers.oidc.clients = [
           {
           client_id = "vikunja";
@@ -100,6 +108,7 @@ in {
           authorization_policy = "one_factor";
           require_pkce = true;
           token_endpoint_auth_method = "none";
+          claims_policy = "opencloud_policy";
           redirect_uris = [
             "https://cloud.taalbubbl.org/oidc-callback.html"
             "https://cloud.taalbubbl.org/oidc-silent-redirect.html"
