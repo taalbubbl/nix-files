@@ -76,9 +76,17 @@ in {
           allowed_origins_from_client_redirect_uris = true;
         };
 
-        # Authelia 4.39+ no longer auto-includes the groups claim — must be declared here
+        # Authelia 4.39+ no longer auto-includes the groups claim — must be declared
+        # here. `custom_claims` maps the `groups` user attribute to a `groups` claim;
+        # without this mapping Authelia silently drops it even if it appears in the
+        # id_token/access_token lists below.
         identity_providers.oidc.claims_policies = {
           opencloud_policy = {
+            custom_claims = {
+              groups = {
+                attribute = "groups";
+              };
+            };
             id_token = [ "groups" "email" "email_verified" "preferred_username" "name" ];
             access_token = [ "groups" "email" "preferred_username" ];
           };
