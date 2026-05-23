@@ -53,7 +53,7 @@ in {
 
         server.address = "tcp://127.0.0.1:${toString cfg.port}";
 
-        log.level = "info";
+        log.level = "debug";
 
         authentication_backend.file.path = toString cfg.usersFile;
 
@@ -76,10 +76,15 @@ in {
           allowed_origins_from_client_redirect_uris = true;
         };
 
-        # Authelia 4.39+ no longer auto-includes the groups claim — must be declared
-        # here. `custom_claims` maps the `groups` user attribute to a `groups` claim;
-        # without this mapping Authelia silently drops it even if it appears in the
-        # id_token/access_token lists below.
+        # Authelia 4.39+ requires both a scope→claim mapping and a claim→attribute
+        # mapping. Requesting the `groups` scope only yields a `groups` claim if both
+        # are declared; the claims_policies' id_token/access_token lists then control
+        # which token types carry it.
+        identity_providers.oidc.scopes = {
+          groups = {
+            claims = [ "groups" ];
+          };
+        };
         identity_providers.oidc.claims_policies = {
           opencloud_policy = {
             custom_claims = {
