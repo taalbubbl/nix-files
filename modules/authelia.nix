@@ -76,15 +76,9 @@ in {
           allowed_origins_from_client_redirect_uris = true;
         };
 
-        # Authelia 4.39+ requires both a scope→claim mapping and a claim→attribute
-        # mapping. Requesting the `groups` scope only yields a `groups` claim if both
-        # are declared; the claims_policies' id_token/access_token lists then control
-        # which token types carry it.
-        identity_providers.oidc.scopes = {
-          groups = {
-            claims = [ "groups" ];
-          };
-        };
+        # `groups` is a standard built-in scope in Authelia and can't be redefined.
+        # `custom_claims.groups` maps the user attribute into a claim by that name;
+        # the id_token/access_token lists then control which token types carry it.
         identity_providers.oidc.claims_policies = {
           opencloud_policy = {
             custom_claims = {
