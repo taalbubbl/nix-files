@@ -210,6 +210,29 @@ in {
   # this host has IPv6 disabled, so pin it to IPv4 loopback.
   services.epmd.listenStream = mkIf cfg.enable_onlyoffice "127.0.0.1";
 
+  # The nixpkgs onlyoffice package doesn't ship `onlyoffice-docs-formats.json`,
+  # which is the static file OnlyOffice falls back to when `wopi.{wordView,wordEdit,
+  # cellView,...}` are empty (the default). Without it, the WOPI discovery emits
+  # `<app>` entries with NO `<action>` children, so OpenCloud's app-registry sees
+  # zero file-extension handlers and OnlyOffice is invisible in the UI even though
+  # everything else is wired up. Populate the arrays directly after the upstream
+  # prestart runs so the discovery generator has something to enumerate.
+  systemd.services.onlyoffice-docservice.serviceConfig.ExecStartPre =
+    mkIf cfg.enable_onlyoffice (lib.mkAfter [
+      (pkgs.writeShellScript "onlyoffice-wopi-formats" ''
+        ${pkgs.jq}/bin/jq '
+          .wopi.wordView  = ["odt","rtf","txt","doc","docx","xml","fb2","epub","html","mht","mhtml","stw","sxw","wps","wpt","ott","dot","dotx","dotm","docm","oform","docxf"]
+          | .wopi.wordEdit  = ["docx","docxf","oform","doc","odt","rtf","txt","html","ott","dotx"]
+          | .wopi.cellView  = ["xls","xlsx","ods","csv","fods","gnumeric","sxc","ots","xlsb","xlsm","xlt","xltm","xltx","wks","wk1","wk2","wk3","wk4"]
+          | .wopi.cellEdit  = ["xlsx","xls","ods","csv","ots","xltx"]
+          | .wopi.slideView = ["pptx","ppt","odp","fodp","otp","pot","potm","potx","pps","ppsm","ppsx","pptm","sxi","key"]
+          | .wopi.slideEdit = ["pptx","ppt","odp","otp","potx"]
+          | .wopi.pdfView   = ["pdf","xps","oxps","djvu"]
+          | .wopi.pdfEdit   = ["pdf"]
+        ' /run/onlyoffice/config/default.json | ${pkgs.moreutils}/bin/sponge /run/onlyoffice/config/default.json
+      '')
+    ]);
+
   security.acme.acceptTerms = true;
   services.nginx = {
     virtualHosts."cloud.${hostname}" = {
