@@ -47,7 +47,16 @@
           extraBuildCommands = ''
             mkdir -p $out/var/{lib/onlyoffice,www}
             cp -ar ${base}/var/www/* $out/var/www/
-            mkdir -p $out/var/www/onlyoffice/documentserver/document-templates/new/en-US
+            # OnlyOffice's getTemplatesFolderExts reads this dir to decide which
+            # extensions to expose in WOPI discovery. An empty dir → empty discovery
+            # → OpenCloud sees no app-providers for .docx/.odt/etc. Touch placeholder
+            # files for every extension we want handled — content doesn't matter for
+            # discovery registration (only the extensions do).
+            tmpl=$out/var/www/onlyoffice/documentserver/document-templates/new/en-US
+            mkdir -p $tmpl
+            for ext in docx docxf xlsx pptx pdf odt ods odp rtf txt csv html epub fb2; do
+              touch $tmpl/new.$ext
+            done
           '';
           extraBwrapArgs = [
             "--bind var/lib/onlyoffice/ var/lib/onlyoffice/"
