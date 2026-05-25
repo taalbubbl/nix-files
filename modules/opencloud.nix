@@ -193,50 +193,22 @@ in {
         frame-ancestors: ["'self'", "https://*.${hostname}"]
     '';
     
-   # secrets.onlyoffice = {
-  #   file = "/home/david/dotfiles/secrets/onlyoffice.age";
-  #   owner = "onlyoffice"; 
-  #   group = "onlyoffice"; 
-  #   mode = "0440";
-  #   };
-  #   secrets.onlyoffice-jwt = {
-  #   file = "/home/david/dotfiles/secrets/onlyoffice-jwt.age";
-  #   owner = "onlyoffice"; 
-  #   group = "onlyoffice"; 
-  #   mode = "0440";
-  #   };
-      # secrets.onlyofficesec = {
-      # file = "/home/david/dotfiles/secrets/onlyofficesec.age";
-      # owner = "onlyoffice"; 
-      # group = "onlyoffice"; 
-      # mode = "0440";
-      # };
-  #  services.onlyoffice = mkIf cfg.enable_onlyoffice {
-  #   enable = true;
-  #   port = 9982;
-
-  #   hostname = "office.davidwild.ch";
-  #   postgresPasswordFile = config.age.secrets.onlyoffice.path;
-  #   securityNonceFile = config.age.secrets.onlyofficesec.path;
-  #   wopi = true;
-  #   nginx.enable = false;
-  #   # TODO implement
-  #   jwtSecretFile = config.age.secrets.onlyoffice-jwt.path;
-
-  # };
-  
+  services.onlyoffice = mkIf cfg.enable_onlyoffice {
+    enable = true;
+    hostname = "office.${hostname}";
+    port = 9982;
+    wopi = true;
+    jwtSecretFile = config.sops.secrets.onlyoffice-jwt-secret.path;
+    securityNonceFile = config.sops.secrets.onlyoffice-security-nonce.path;
+  };
+  # The onlyoffice module creates the virtualhost without ACME/SSL — layer them on.
+  services.nginx.virtualHosts."office.${hostname}" = mkIf cfg.enable_onlyoffice {
+    enableACME = true;
+    forceSSL = true;
+  };
 
   security.acme.acceptTerms = true;
-  services.nginx = {    
-    virtualHosts."office.${hostname}" = {
-      forceSSL = true; # Force browsers to stay on HTTPS
-      enableACME = true;
-      locations."/" = {
-        proxyPass = "http://${internal_host}:9982"; # Use http here!
-        proxyWebsockets = true;
-      };
-    };
-
+  services.nginx = {
     virtualHosts."cloud.${hostname}" = {
       forceSSL = true;
       enableACME = true;
@@ -305,34 +277,6 @@ in {
   
   };
   
-    virtualisation.oci-containers = {
-      backend = "podman";
-      containers = {
-
-        onlyoffice =  {
-          image = "onlyoffice/documentserver:latest";
-          ports = ["9982:80"];
-          autoStart = true;
-          environment = {
-
-            WOPI_ENABLED= "true";
-            JWT_ENABLED = "true";
-            JWT_SECRET="whatever";
-            NODE_TLS_REJECT_UNAUTHORIZED = "0";
-            USE_UNAUTHORIZED_STORAGE = "true";
-
-          };
-          extraOptions = [
-            "--add-host=bernina:host-gateway"
-          ];
-        }; };};
-    # TODO file search engine opensearch!
-    #     tika = mkIf cfg.enable_full_text_search {
-    #       image = "apache/tika:latest-full";
-    #       ports = ["9998:9998"];
-    #     };
-    #   };
-    # };
     services.radicale = mkIf cfg.enable_radicale {
       enable = true;
       settings = {
