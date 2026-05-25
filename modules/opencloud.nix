@@ -95,7 +95,18 @@ in {
       auto_provision_accounts = true;
       role_assignment = {
         driver = "oidc";
-        oidc_role_mapper.role_claim = "groups";
+        oidc_role_mapper = {
+          role_claim = "groups";
+          # Defaults get nullified once we declare any field under `oidc_role_mapper`,
+          # so list the mappings explicitly. Claim value `admin` matches what we set in
+          # authelia-users.yaml.
+          role_mapping = [
+            { role_name = "admin";      claim_value = "admin"; }
+            { role_name = "spaceadmin"; claim_value = "opencloudSpaceAdmin"; }
+            { role_name = "user";       claim_value = "opencloudUser"; }
+            { role_name = "user-light"; claim_value = "opencloudGuest"; }
+          ];
+        };
       };
 
       user_oidc_claim = "preferred_username";
