@@ -6,34 +6,34 @@ users:
     password: "$argon2id$v=19$m=65536,t=3,p=4$GtmgRCAfFmK/yRT9ojX1lw$RjIV4RsHOULiycYNbXFyGzRUDhVnWjja9JTWZjWWG0A"
     email: "contact@davidwild.ch"
     groups:
-      - admin
+      - opencloudAdmin
   markus:
     displayname: "Markus"
     password: "$argon2id$v=19$m=65536,t=3,p=4$3NfNtTRVArsaf9CvLB+1Ng$FlIvl/5OfeTPeBWa9iN2k8ODColrhC5U/K5/ZjGdRSo"
     email: "markus.knell.mk@gmail.com"
     groups:
-      - admin
+      - opencloudAdmin
   mika:
     displayname: "Mika"
     password: "$argon2id$v=19$m=65536,t=3,p=4$+f88ud9NwJhsjzMPstnsfQ$mBUFt/BU94uDUmAE8iYhlnVVwhEcLS4GVPmZRABomJw"
     email: "mikabuijs@ziggo.nl"
     groups:
-      - admin
+      - opencloudAdmin
   regina:
     displayname: "Regina"
     password: "$argon2id$v=19$m=65536,t=3,p=4$M+Kk/j+VSbEWTrzZ6pC5FA$U5VuUZJU58ONxP3sX/OubFDcsL6ZWt0HOZID5wyEprE"
     email: "rjarillo303@gmail.com"
     groups:
-      - admin
+      - opencloudAdmin
   scarlett:
     displayname: "Scarlett"
     password: "$argon2id$v=19$m=65536,t=3,p=4$Pb0Qd6LssUbdAx9X2ZdIjQ$guXa+SM2GpgsuWJKwDNdfLWmrJh9Ofz6t8ki1nQXMrU"
     email: "scarlett.kim1sss@gmail.com"
     groups:
-      - admin
+      - opencloudAdmin
   tonda:
     displayname: "Tonda"
     password: "$argon2id$v=19$m=65536,t=3,p=4$GUqRsYZlDVnew9U4e1foKg$9cdIJAxEuIT+v8LjXyzwVaTXlx7w4me0oD+8BwIQcoQ"
     email: "tes.antonin@gmail.com"
     groups:
-      - admin
+      - opencloudAdmin

@@ -75,6 +75,9 @@ in {
     # Env vars take precedence over settings file — ensure proxy uses Authelia, not itself
     OC_OIDC_ISSUER = "https://auth.${hostname}";
     PROXY_OIDC_ISSUER = "https://auth.${hostname}";
+    # web.yaml's `oidc.scope` was being silently ignored; the env var is the
+    # only reliable way to make the SPA request the groups scope
+    WEB_OIDC_SCOPE = "openid profile email groups";
     # Secrets must be env vars (sops writes a file, not an inline value)
     OC_JWT_SECRET_FILE = config.sops.secrets.opencloud-jwt-secret.path;
     COLLABORATION_JWT_SECRET_FILE = mkIf cfg.enable_onlyoffice config.sops.secrets.opencloud-collab-secret.path;
