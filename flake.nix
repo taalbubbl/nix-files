@@ -69,7 +69,12 @@
                     key = "opencloud-collab-secret";
                     owner = "onlyoffice";
                   };
-                  secrets.onlyoffice-security-nonce = { owner = "onlyoffice"; };
+                  # nginx needs to `include` the nonce file too — give it group read.
+                  secrets.onlyoffice-security-nonce = {
+                    owner = "onlyoffice";
+                    group = "nginx";
+                    mode = "0440";
+                  };
                 };
                 vikunja = {
                   enable = true;
