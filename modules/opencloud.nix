@@ -318,7 +318,20 @@ in {
         # symlink here is visible inside the sandbox.
         ++ (optionals cfg.enable_onlyoffice [
           "L+ /var/www/onlyoffice - - - - ${config.services.onlyoffice.package}/var/www/onlyoffice"
+          # Writable empty dir to overlay onto the read-only symlinked path
+          # (OnlyOffice scandirs this path even though it ships no en-US templates).
+          "d /var/lib/onlyoffice/document-templates 0755 onlyoffice onlyoffice -"
+          "d /var/lib/onlyoffice/document-templates/new 0755 onlyoffice onlyoffice -"
+          "d /var/lib/onlyoffice/document-templates/new/en-US 0755 onlyoffice onlyoffice -"
         ]);
+
+      # The symlink above points into a read-only /nix/store path; we can't add the
+      # missing document-templates subdir inside it. Bind-mount our writable empty
+      # dir over the missing path inside the docservice's mount namespace — the
+      # bwrap sandbox inherits the mount.
+      systemd.services.onlyoffice-docservice.serviceConfig.BindPaths = mkIf cfg.enable_onlyoffice [
+        "/var/lib/onlyoffice/document-templates:/var/www/onlyoffice/documentserver/document-templates"
+      ];
 
       # 2. Grant the Radicale service permission to access this path
       systemd.services.radicale.serviceConfig = mkIf cfg.enable_radicale {
