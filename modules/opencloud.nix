@@ -85,6 +85,11 @@ in {
     # Public URL where OnlyOffice (running in podman) calls back to WOPI; the
     # internal default is localhost:9300 which is unreachable from the container.
     COLLABORATION_WOPI_SRC = mkIf cfg.enable_onlyoffice "https://wopi.${hostname}";
+    # OnlyOffice's nixpkgs package doesn't generate the RSA proof keys (publicKey/
+    # modulus/exponent stay empty in config), so its WOPI discovery has no
+    # <proof-key> element and OpenCloud rejects every callback. Disable proof-key
+    # verification — JWT (COLLABORATION_OO_SECRET) still authenticates the channel.
+    COLLABORATION_APP_PROOF_DISABLE = mkIf cfg.enable_onlyoffice "true";
   };
 
   settings = {
