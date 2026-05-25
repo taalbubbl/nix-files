@@ -82,6 +82,9 @@ in {
     OC_JWT_SECRET_FILE = config.sops.secrets.opencloud-jwt-secret.path;
     COLLABORATION_JWT_SECRET_FILE = mkIf cfg.enable_onlyoffice config.sops.secrets.opencloud-collab-secret.path;
     COLLABORATION_OO_SECRET_FILE = config.sops.secrets.opencloud-collab-secret.path;
+    # Public URL where OnlyOffice (running in podman) calls back to WOPI; the
+    # internal default is localhost:9300 which is unreachable from the container.
+    COLLABORATION_WOPI_SRC = mkIf cfg.enable_onlyoffice "https://wopi.${hostname}";
   };
 
   settings = {
@@ -142,7 +145,11 @@ in {
         addr = onlyoffice_url;
         insecure = true;
       };
-      wopi.src = "https://wopi.${hostname}";
+      # YAML key is `wopisrc` (one word), not `wopi.src` — used wrong key before and
+       # the OnlyOffice iframe was getting WOPISrc=https://localhost:9300/... (the
+       # internal collaboration bind addr leaked as default), so the editor couldn't
+       # call back into WOPI from inside the podman container.
+      wopi.wopisrc = "https://wopi.${hostname}";
       cs3api.datagateway.insecure = true;
     };
 
