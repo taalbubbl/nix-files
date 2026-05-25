@@ -19,28 +19,42 @@
       pgbackrest-exporter = final.callPackage ./pkgs/pgbackrest-exporter.nix { };
       # OnlyOffice's WOPI discovery scandirs document-templates/new/en-US and
       # crashes when it doesn't exist (returns empty XML → OpenCloud nil-derefs).
-      # The upstream nixpkgs package doesn't ship that dir, and has TWO subtleties:
-      #   (1) It uses a custom installPhase that doesn't `runHook postInstall`, so
-      #       a postInstall hook is silently dropped. Use `postFixup` (runs via the
-      #       always-invoked fixupPhase) to amend the package output.
-      #   (2) The bwrap sandbox doesn't use the package output directly; it uses
+      # The upstream nixpkgs package doesn't ship that dir, and has THREE subtleties
+      # we have to handle in concert:
+      #   (1) The package uses a custom installPhase that doesn't `runHook postInstall`,
+      #       so a postInstall hook is silently dropped. Use `preFixup`/`postFixup`.
+      #   (2) The bwrap sandbox doesn't read the package's /var/www directly; it uses
       #       `passthru.fhs` (a buildFHSEnv that copies documentserver/var/www at
-      #       BUILD time via a local let-binding). Overlaying the top-level package
-      #       doesn't propagate to that copy. Override the fhs's extraBuildCommands
-      #       to add the dir into the FHS rootfs that the wrapper actually mounts.
+      #       BUILD time). `overrideAttrs` on the FHS wrapper only changes the wrapper
+      #       derivation hash — it doesn't re-run buildFHSEnv with new args, so the
+      #       internal `fhsenv-rootfs` is unchanged. We have to call buildFHSEnv afresh.
+      #   (3) The original buildFHSEnv references `onlyoffice-documentserver` from a
+      #       local let-binding, not the overlaid attribute, so we pass our patched
+      #       `base` explicitly when copying the var/www tree.
       onlyoffice-documentserver = let
         base = prev.onlyoffice-documentserver.overrideAttrs (old: {
-          postFixup = (old.postFixup or "") + ''
+          preFixup = (old.preFixup or "") + ''
             mkdir -p $out/var/www/onlyoffice/documentserver/document-templates/new/en-US
           '';
         });
-        fhsPatched = base.passthru.fhs.overrideAttrs (oldFhs: {
-          extraBuildCommands = (oldFhs.extraBuildCommands or "") + ''
+        fhsNew = prev.buildFHSEnv {
+          name = "onlyoffice-wrapper";
+          targetPkgs = pkgs: [
+            prev.gcc-unwrapped.lib
+            base
+            base.passthru.fileconverter
+          ];
+          extraBuildCommands = ''
+            mkdir -p $out/var/{lib/onlyoffice,www}
+            cp -ar ${base}/var/www/* $out/var/www/
             mkdir -p $out/var/www/onlyoffice/documentserver/document-templates/new/en-US
           '';
-        });
+          extraBwrapArgs = [
+            "--bind var/lib/onlyoffice/ var/lib/onlyoffice/"
+          ];
+        };
       in base.overrideAttrs (old: {
-        passthru = old.passthru // { fhs = fhsPatched; };
+        passthru = old.passthru // { fhs = fhsNew; };
       });
     };
   in
