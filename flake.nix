@@ -19,12 +19,28 @@
       pgbackrest-exporter = final.callPackage ./pkgs/pgbackrest-exporter.nix { };
       # OnlyOffice's WOPI discovery scandirs document-templates/new/en-US and
       # crashes when it doesn't exist (returns empty XML → OpenCloud nil-derefs).
-      # Upstream ships no templates; just create the empty path inside the package
-      # so it's present in the FHS rootfs the docservice sandboxes itself into.
-      onlyoffice-documentserver = prev.onlyoffice-documentserver.overrideAttrs (old: {
-        postInstall = (old.postInstall or "") + ''
-          mkdir -p $out/var/www/onlyoffice/documentserver/document-templates/new/en-US
-        '';
+      # The upstream nixpkgs package doesn't ship that dir, and has TWO subtleties:
+      #   (1) It uses a custom installPhase that doesn't `runHook postInstall`, so
+      #       a postInstall hook is silently dropped. Use `postFixup` (runs via the
+      #       always-invoked fixupPhase) to amend the package output.
+      #   (2) The bwrap sandbox doesn't use the package output directly; it uses
+      #       `passthru.fhs` (a buildFHSEnv that copies documentserver/var/www at
+      #       BUILD time via a local let-binding). Overlaying the top-level package
+      #       doesn't propagate to that copy. Override the fhs's extraBuildCommands
+      #       to add the dir into the FHS rootfs that the wrapper actually mounts.
+      onlyoffice-documentserver = let
+        base = prev.onlyoffice-documentserver.overrideAttrs (old: {
+          postFixup = (old.postFixup or "") + ''
+            mkdir -p $out/var/www/onlyoffice/documentserver/document-templates/new/en-US
+          '';
+        });
+        fhsPatched = base.passthru.fhs.overrideAttrs (oldFhs: {
+          extraBuildCommands = (oldFhs.extraBuildCommands or "") + ''
+            mkdir -p $out/var/www/onlyoffice/documentserver/document-templates/new/en-US
+          '';
+        });
+      in base.overrideAttrs (old: {
+        passthru = old.passthru // { fhs = fhsPatched; };
       });
     };
   in
