@@ -307,9 +307,18 @@ in {
       
     };
     # 1. Create the directory automatically
-      systemd.tmpfiles.rules = mkIf cfg.enable_radicale[
-        "d ${cfg.path_radicale} 0750 radicale radicale -"
-      ];
+      systemd.tmpfiles.rules =
+        (optionals cfg.enable_radicale [
+          "d ${cfg.path_radicale} 0750 radicale radicale -"
+        ])
+        # The NixOS onlyoffice module doesn't symlink the documentserver assets
+        # into /var/www, so OnlyOffice's WOPI discovery scandir fails with ENOENT
+        # and returns an empty XML doc — which crashes OpenCloud's parseWopiDiscovery.
+        # The wrapper auto-binds /var into its sandbox and /nix is also bound, so a
+        # symlink here is visible inside the sandbox.
+        ++ (optionals cfg.enable_onlyoffice [
+          "L+ /var/www/onlyoffice - - - - ${config.services.onlyoffice.package}/var/www/onlyoffice"
+        ]);
 
       # 2. Grant the Radicale service permission to access this path
       systemd.services.radicale.serviceConfig = mkIf cfg.enable_radicale {
