@@ -206,6 +206,9 @@ in {
     enableACME = true;
     forceSSL = true;
   };
+  # OnlyOffice pulls in RabbitMQ which needs epmd. epmd defaults to IPv6-only and
+  # this host has IPv6 disabled, so pin it to IPv4 loopback.
+  services.epmd.listenStream = mkIf cfg.enable_onlyoffice "127.0.0.1";
 
   security.acme.acceptTerms = true;
   services.nginx = {
