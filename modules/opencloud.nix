@@ -207,9 +207,19 @@ in {
     securityNonceFile = config.sops.secrets.onlyoffice-security-nonce.path;
   };
   # The onlyoffice module creates the virtualhost without ACME/SSL — layer them on.
+  # Also: the upstream regex location for /VERSION-HASH/web-apps/... silently fails
+  # to match (despite looking correct), so the editor iframe URLs fall through to
+  # the Node docservice which returns "Cannot GET". Add our own regex that takes
+  # precedence — first defined wins among regex matches in nginx.
   services.nginx.virtualHosts."office.${hostname}" = mkIf cfg.enable_onlyoffice {
     enableACME = true;
     forceSSL = true;
+    extraConfig = ''
+      location ~ "^/[0-9]+\.[0-9]+\.[0-9]+-[a-z0-9]+/(web-apps|sdkjs|sdkjs-plugins|fonts|dictionaries)(/.*)$" {
+        expires 365d;
+        alias ${config.services.onlyoffice.package}/var/www/onlyoffice/documentserver/$1$2;
+      }
+    '';
   };
   # OnlyOffice pulls in RabbitMQ which needs epmd. epmd defaults to IPv6-only and
   # this host has IPv6 disabled, so pin it to IPv4 loopback.
