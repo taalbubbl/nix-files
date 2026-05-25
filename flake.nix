@@ -17,6 +17,15 @@
   let
     overlay = final: prev: {
       pgbackrest-exporter = final.callPackage ./pkgs/pgbackrest-exporter.nix { };
+      # OnlyOffice's WOPI discovery scandirs document-templates/new/en-US and
+      # crashes when it doesn't exist (returns empty XML → OpenCloud nil-derefs).
+      # Upstream ships no templates; just create the empty path inside the package
+      # so it's present in the FHS rootfs the docservice sandboxes itself into.
+      onlyoffice-documentserver = prev.onlyoffice-documentserver.overrideAttrs (old: {
+        postInstall = (old.postInstall or "") + ''
+          mkdir -p $out/var/www/onlyoffice/documentserver/document-templates/new/en-US
+        '';
+      });
     };
   in
     {
