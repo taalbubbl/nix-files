@@ -311,27 +311,29 @@ in {
         (optionals cfg.enable_radicale [
           "d ${cfg.path_radicale} 0750 radicale radicale -"
         ])
-        # The NixOS onlyoffice module doesn't symlink the documentserver assets
-        # into /var/www, so OnlyOffice's WOPI discovery scandir fails with ENOENT
-        # and returns an empty XML doc — which crashes OpenCloud's parseWopiDiscovery.
-        # The wrapper auto-binds /var into its sandbox and /nix is also bound, so a
-        # symlink here is visible inside the sandbox.
-        ++ (optionals cfg.enable_onlyoffice [
-          "L+ /var/www/onlyoffice - - - - ${config.services.onlyoffice.package}/var/www/onlyoffice"
-          # Writable empty dir to overlay onto the read-only symlinked path
-          # (OnlyOffice scandirs this path even though it ships no en-US templates).
-          "d /var/lib/onlyoffice/document-templates 0755 onlyoffice onlyoffice -"
-          "d /var/lib/onlyoffice/document-templates/new 0755 onlyoffice onlyoffice -"
-          "d /var/lib/onlyoffice/document-templates/new/en-US 0755 onlyoffice onlyoffice -"
-        ]);
-
-      # The symlink above points into a read-only /nix/store path; we can't add the
-      # missing document-templates subdir inside it. Bind-mount our writable empty
-      # dir over the missing path inside the docservice's mount namespace — the
-      # bwrap sandbox inherits the mount.
-      systemd.services.onlyoffice-docservice.serviceConfig.BindPaths = mkIf cfg.enable_onlyoffice [
-        "/var/lib/onlyoffice/document-templates:/var/www/onlyoffice/documentserver/document-templates"
-      ];
+        # The NixOS onlyoffice module doesn't lay out /var/www/onlyoffice, so
+        # OnlyOffice's WOPI discovery scandirs paths under it and fails with ENOENT —
+        # which makes /hosting/discovery return an empty XML doc, which in turn
+        # crashes OpenCloud's parseWopiDiscovery (nil-deref). The package also ships
+        # no `document-templates` folder, so we need a writable real dir for it.
+        # Build the tree by hand: real dirs at the top and for document-templates,
+        # symlinks per-subdir for everything that comes from the nix package.
+        ++ (optionals cfg.enable_onlyoffice (let
+          pkg = config.services.onlyoffice.package;
+        in [
+          "d /var/www                                                   0755 root       root       -"
+          "d /var/www/onlyoffice                                        0755 root       root       -"
+          "d /var/www/onlyoffice/documentserver                         0755 root       root       -"
+          "L+ /var/www/onlyoffice/documentserver/fonts                  - - - - ${pkg}/var/www/onlyoffice/documentserver/fonts"
+          "L+ /var/www/onlyoffice/documentserver/sdkjs                  - - - - ${pkg}/var/www/onlyoffice/documentserver/sdkjs"
+          "L+ /var/www/onlyoffice/documentserver/sdkjs-plugins          - - - - ${pkg}/var/www/onlyoffice/documentserver/sdkjs-plugins"
+          "L+ /var/www/onlyoffice/documentserver/server                 - - - - ${pkg}/var/www/onlyoffice/documentserver/server"
+          "L+ /var/www/onlyoffice/documentserver/web-apps               - - - - ${pkg}/var/www/onlyoffice/documentserver/web-apps"
+          "L+ /var/www/onlyoffice/documentserver-example                - - - - ${pkg}/var/www/onlyoffice/documentserver-example"
+          "d /var/www/onlyoffice/documentserver/document-templates      0755 onlyoffice onlyoffice -"
+          "d /var/www/onlyoffice/documentserver/document-templates/new  0755 onlyoffice onlyoffice -"
+          "d /var/www/onlyoffice/documentserver/document-templates/new/en-US 0755 onlyoffice onlyoffice -"
+        ]));
 
       # 2. Grant the Radicale service permission to access this path
       systemd.services.radicale.serviceConfig = mkIf cfg.enable_radicale {
