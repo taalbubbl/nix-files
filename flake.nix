@@ -31,12 +31,13 @@
       #   (3) The original buildFHSEnv references `onlyoffice-documentserver` from a
       #       local let-binding, not the overlaid attribute, so we pass our patched
       #       `base` explicitly when copying the var/www tree.
+      # The FHS sandbox bwrap defaults don't bind /var/lib/onlyoffice/ from
+      # the host, so the docservice can't see the templates we populate there
+      # at runtime (modules/opencloud.nix ExecStartPre). Re-call buildFHSEnv
+      # with the extra bind. `overrideAttrs` on the wrapper alone doesn't
+      # re-run buildFHSEnv — must construct a new one.
       onlyoffice-documentserver = let
-        base = prev.onlyoffice-documentserver.overrideAttrs (old: {
-          preFixup = (old.preFixup or "") + ''
-            mkdir -p $out/var/www/onlyoffice/documentserver/document-templates/new/en-US
-          '';
-        });
+        base = prev.onlyoffice-documentserver;
         fhsNew = prev.buildFHSEnv {
           name = "onlyoffice-wrapper";
           targetPkgs = pkgs: [
@@ -44,23 +45,6 @@
             base
             base.passthru.fileconverter
           ];
-          extraBuildCommands = ''
-            mkdir -p $out/var/{lib/onlyoffice,www}
-            cp -ar ${base}/var/www/* $out/var/www/
-            # `cp -ar` preserves the nix-store read-only mode on the copied dirs,
-            # so we can't add files inside without re-asserting write permission.
-            chmod -R u+w $out/var/www
-            # OnlyOffice's getTemplatesFolderExts reads this dir to decide which
-            # extensions to expose in WOPI discovery. An empty dir → empty discovery
-            # → OpenCloud sees no app-providers for .docx/.odt/etc. Touch placeholder
-            # files for every extension we want handled — content doesn't matter for
-            # discovery registration (only the extensions do).
-            tmpl=$out/var/www/onlyoffice/documentserver/document-templates/new/en-US
-            mkdir -p $tmpl
-            for ext in docx docxf xlsx pptx pdf odt ods odp rtf txt csv html epub fb2; do
-              touch $tmpl/new.$ext
-            done
-          '';
           extraBwrapArgs = [
             "--bind var/lib/onlyoffice/ var/lib/onlyoffice/"
           ];

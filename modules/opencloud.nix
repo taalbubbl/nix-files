@@ -228,6 +228,12 @@ in {
       hostname = "office.${hostname}";
       port = 9982;
       wopi = true;
+      # OpenCloud's WOPI callback ultimately hits 127.0.0.1 via the nginx
+      # reverse proxy. OnlyOffice's request-filtering-agent blocks
+      # private/loopback addresses by default; opt back in. (Replaces the
+      # `allowPrivateIPAddress = true` patch we used to carry in the nixpkgs
+      # fork — upstream now exposes it as this option.)
+      allowLocalConnections = true;
       jwtSecretFile = config.sops.secrets.onlyoffice-jwt-secret.path;
       securityNonceFile = config.sops.secrets.onlyoffice-security-nonce.path;
     };
