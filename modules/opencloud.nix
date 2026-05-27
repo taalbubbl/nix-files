@@ -215,6 +215,8 @@ in {
 
     # The onlyoffice module automatically creates the virtualhost.
     # We deeply inject our customized asset tracking filter cleanly.
+    # The onlyoffice module automatically creates the virtualhost.
+    # We deeply inject our customized asset tracking filter cleanly.
     services.nginx.virtualHosts."office.${hostname}" = mkIf cfg.enable_onlyoffice {
       enableACME = true;
       forceSSL = true;
@@ -224,12 +226,15 @@ in {
       locations."~* ^/[0-9]+\\.[0-9]+\\.[0-9]+-[a-z0-9]+/(web-apps|sdkjs|sdkjs-plugins|fonts|dictionaries)(/.*)$" = {
         extraConfig = ''
           expires 365d;
-          alias ${config.services.onlyoffice.package}/var/www/onlyoffice/documentserver/$1$2;
+          
+          # Fix: Ensure a explicit trailing slash terminates the alias root mapping
+          alias ${config.services.onlyoffice.package}/var/www/onlyoffice/documentserver/$1/$2;
 
           # CORS for cross-origin asset fetches from the OpenCloud SPA iframe.
           add_header Access-Control-Allow-Origin "https://cloud.${hostname}" always;
           add_header Access-Control-Allow-Methods "GET, POST, OPTIONS" always;
           add_header Access-Control-Allow-Headers "Authorization, Content-Type, X-Requested-With" always;
+          
           # nginx's add_header drops parent headers as soon as ANY add_header
           # appears at this level, so repeat the server-level ones here.
           add_header X-Frame-Options "ALLOW-FROM https://cloud.${hostname}" always;
