@@ -265,22 +265,22 @@ in {
     # this host has IPv6 disabled, so pin it to IPv4 loopback.
     services.epmd.listenStream = mkIf cfg.enable_onlyoffice "127.0.0.1";
 
-    # Populate format rules for WOPI discovery mapping
-    # systemd.services.onlyoffice-docservice.serviceConfig.ExecStartPre =
-    #   mkIf cfg.enable_onlyoffice (lib.mkAfter [
-    #     (pkgs.writeShellScript "onlyoffice-wopi-formats" ''
-    #       ${pkgs.jq}/bin/jq '
-    #         .wopi.wordView  = ["odt","rtf","txt","doc","docx","xml","fb2","epub","html","mht","mhtml","stw","sxw","wps","wpt","ott","dot","dotx","dotm","docm","oform","docxf"]
-    #         | .wopi.wordEdit  = ["docx","docxf","oform","doc","odt","rtf","txt","html","ott","dotx"]
-    #         | .wopi.cellView  = ["xls","xlsx","ods","csv","fods","gnumeric","sxc","ots","xlsb","xlsm","xlt","xltm","xltx","wks","wk1","wk2","wk3","wk4"]
-    #         | .wopi.cellEdit  = ["xlsx","xls","ods","csv","ots","xltx"]
-    #         | .wopi.slideView = ["pptx","ppt","odp","fodp","otp","pot","potm","potx","pps","ppsm","ppsx","pptm","sxi","key"]
-    #         | .wopi.slideEdit = ["pptx","ppt","odp","otp","potx"]
-    #         | .wopi.pdfView   = ["pdf","xps","oxps","djvu"]
-    #         | .wopi.pdfEdit   = ["pdf"]
-    #       ' /run/onlyoffice/config/default.json | ${pkgs.moreutils}/bin/sponge /run/onlyoffice/config/default.json
-    #     '')
-    #   ]);
+    # OnlyOffice's WOPI discovery resolves `newFileTemplate` (default
+    # "../../document-templates/new") relative to the docservice cwd. Inside
+    # the bwrap sandbox cwd is "/", so the relative path resolves to
+    # /document-templates/new which doesn't exist — readdir fails, the
+    # in-process cache becomes {}, and /hosting/discovery emits <app> entries
+    # with zero <action> children. OpenCloud then registers no file handlers.
+    # Rewrite the path to absolute (the FHS rootfs is bound under /var inside
+    # the sandbox, so the templates we touch in flake.nix land there).
+    systemd.services.onlyoffice-docservice.serviceConfig.ExecStartPre =
+      mkIf cfg.enable_onlyoffice (lib.mkAfter [
+        (pkgs.writeShellScript "onlyoffice-fix-templates-path" ''
+          ${pkgs.jq}/bin/jq '.services.CoAuthoring.server.newFileTemplate = "/var/www/onlyoffice/documentserver/document-templates/new"' \
+            /run/onlyoffice/config/default.json \
+            | ${pkgs.moreutils}/bin/sponge /run/onlyoffice/config/default.json
+        '')
+      ]);
 
     security.acme.acceptTerms = true;
 
