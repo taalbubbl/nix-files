@@ -10,10 +10,13 @@
     };
     sops-nix.url = "github:Mic92/sops-nix";
 
+    # git+ssh cause its not opensource
     taalbubbl.url = "git+ssh://git@github.com/taalbubbl/taalbubbl?ref=main";
+    openpronounce.url = "github:taalbubbl/OpenPronounce";
+    
   };
 
-  outputs = { self, nixpkgs, home-manager, sops-nix, taalbubbl}:
+  outputs = { self, nixpkgs, home-manager, sops-nix, taalbubbl, openpronounce}:
   let
     overlay = final: prev: {
       pgbackrest-exporter = final.callPackage ./pkgs/pgbackrest-exporter.nix { };
@@ -73,6 +76,7 @@
             modules = [
               { nixpkgs.overlays = [ overlay ]; }
               taalbubbl.nixosModules.default
+              openpronounce.nixosModules.default
               ./machines/chuchichaestli/default.nix
               ./modules/cloudflared.nix
               ./modules/nginx.nix
@@ -152,6 +156,12 @@
                     port = 5432;
                   };
                   environmentFile = config.sops.secrets.taalbubbl.path;
+                };
+                services.openpronounce = {
+                  enable = true;
+                  port = 8000;
+                  host = "0.0.0.0";
+                  # environmentFile = "/run/secrets/openpronounce.env";
                 };
                 wildcloud.postgresql = {
                   enable = true;
