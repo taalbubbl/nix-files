@@ -179,6 +179,7 @@ in {
           view_app_addr = "eu.opencloud.api.collaboration";
           secure_view_app_addr = "eu.opencloud.api.collaboration";
         };
+      };
     };
 
     environment.etc."opencloud/csp.yaml".text = ''
@@ -283,8 +284,7 @@ in {
 
     security.acme.acceptTerms = true;
 
-    services.nginx = {
-      virtualHosts."cloud.${hostname}" = {
+    services.nginx.virtualHosts."cloud.${hostname}" = {
         forceSSL = true;
         enableACME = true;
 
@@ -332,20 +332,19 @@ in {
             return = "301 $scheme://$host/carddav/";
           };
         }; # End of locations
-      };
+    };
 
-      virtualHosts."wopi.${hostname}" = {
-        enableACME = true;
-        forceSSL = true;
-        locations."/" = {
-          proxyPass = "http://127.0.0.1:${toString wopi_port}";
-          extraConfig = ''
-            proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_set_header X-Forwarded-Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-          '';
-        };
+    services.nginx.virtualHosts."wopi.${hostname}" = {
+      enableACME = true;
+      forceSSL = true;
+      locations."/" = {
+        proxyPass = "http://127.0.0.1:${toString wopi_port}";
+        extraConfig = ''
+          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_set_header X-Forwarded-Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        '';
       };
     };
 
