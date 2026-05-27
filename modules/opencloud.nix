@@ -217,36 +217,35 @@ in {
     # We deeply inject our customized asset tracking filter cleanly.
     # The onlyoffice module automatically creates the virtualhost.
     # We deeply inject our customized asset tracking filter cleanly.
+    # The onlyoffice module automatically creates the virtualhost.
+    # We strip the dirty Nix derivation hash off the requested assets string.
     services.nginx.virtualHosts."office.${hostname}" = mkIf cfg.enable_onlyoffice {
       enableACME = true;
       forceSSL = true;
 
-      # Notice the direct attribute string configuration. This updates the location 
-      # structure cleanly without erasing the module's core locations!
-      locations."~* ^/[0-9]+\\.[0-9]+\\.[0-9]+-[a-z0-9]+/(web-apps|sdkjs|sdkjs-plugins|fonts|dictionaries)(/.*)$" = {
-        extraConfig = ''
-          expires 365d;
-          
-          # Fix: Ensure a explicit trailing slash terminates the alias root mapping
-          alias ${config.services.onlyoffice.package}/var/www/onlyoffice/documentserver/$1/$2;
+      extraConfig = ''
+        # Matches the clean version block, strips out the long Nix derivation hash string,
+        # and cleanly translates it to what the standard /web-apps/ handlers expect.
+        rewrite ^/([0-9]+\.[0-9]+\.[0-9]+)-[^/]+/(web-apps|sdkjs|sdkjs-plugins|fonts|dictionaries|welcome)(/.*)$ /$1/$2$3 last;
+        rewrite ^/([0-9]+\.[0-9]+\.[0-9]+)-[^/]+/(doc|downloadas)(/.*)$ /$1/$2$3 last;
 
-          # CORS for cross-origin asset fetches from the OpenCloud SPA iframe.
+        # Inject global framing security exemptions
+        add_header X-Frame-Options "ALLOW-FROM https://cloud.${hostname}" always;
+        add_header Content-Security-Policy "frame-ancestors 'self' https://cloud.${hostname}" always;
+      '';
+
+      # Ensure frames rendering assets can communicate across domains inside the OpenCloud SPA interface
+      locations."~ ^/([0-9]+\.[0-9]+\.[0-9]+)?/(web-apps|sdkjs|sdkjs-plugins|fonts|dictionaries)" = {
+        extraConfig = ''
           add_header Access-Control-Allow-Origin "https://cloud.${hostname}" always;
           add_header Access-Control-Allow-Methods "GET, POST, OPTIONS" always;
           add_header Access-Control-Allow-Headers "Authorization, Content-Type, X-Requested-With" always;
           
-          # nginx's add_header drops parent headers as soon as ANY add_header
-          # appears at this level, so repeat the server-level ones here.
+          # Re-assert frame permissions at the location level
           add_header X-Frame-Options "ALLOW-FROM https://cloud.${hostname}" always;
           add_header Content-Security-Policy "frame-ancestors 'self' https://cloud.${hostname}" always;
         '';
       };
-
-      # Inject global framing security exemptions
-      extraConfig = ''
-        add_header X-Frame-Options "ALLOW-FROM https://cloud.${hostname}" always;
-        add_header Content-Security-Policy "frame-ancestors 'self' https://cloud.${hostname}" always;
-      '';
     };
 
     # OnlyOffice pulls in RabbitMQ which needs epmd. epmd defaults to IPv6-only and
