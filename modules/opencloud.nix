@@ -217,7 +217,7 @@ in {
     enableACME = true;
     forceSSL = true;
     extraConfig = ''
-      rewrite ^/[0-9]+\.[0-9]+\.[0-9]+-[a-z0-9]+(/.*)$ /${config.services.onlyoffice.package.version}$1 last;
+      rewrite ^/[0-9]+\.[0-9]+\.[0-9]+-[a-z0-9]+(/.*)$ /$1 last;
     '';
   };
   # OnlyOffice pulls in RabbitMQ which needs epmd. epmd defaults to IPv6-only and
