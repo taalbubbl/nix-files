@@ -219,20 +219,17 @@ in {
     enableACME = true;
     forceSSL = true;
     
-    # Catch the versioned app-asset paths with regex (which takes precedence over the default "/")
-    # and strip the hash out dynamically before proxying to OnlyOffice.
-    locations."~* ^/[0-9]+\\.[0-9]+\\.[0-9]+-[a-z0-9]+/(.*)$" = {
-      proxyPass = "http://127.0.0.1:${toString config.services.onlyoffice.port}/$1";
-      extraConfig = ''
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-      '';
-    };
+    # We use a top-level rewrite rule. This executes BEFORE Nginx begins 
+    # matching any location blocks (like "/" or module-internal blocks).
+    # It catches any version-hashed asset request and strips out the hash
+    # immediately, making the request clean before it hits any routing rules.
+    extraConfig = ''
+      rewrite ^/[0-9]+\.[0-9]+\.[0-9]+-[a-z0-9]+(/.*)$ /$1 last;
+    '';
 
-    # DO NOT define locations."/" here. 
-    # The upstream module handles it safely without causing duplicate directives.
+    # Do not declare locations."/" or any other location blocks here. 
+    # The default module code will handle the actual proxying now that the 
+    # incoming URIs are safely cleaned up by the rewrite.
   };
   # OnlyOffice pulls in RabbitMQ which needs epmd. epmd defaults to IPv6-only and
   # this host has IPv6 disabled, so pin it to IPv4 loopback.
