@@ -265,20 +265,34 @@ in {
     # this host has IPv6 disabled, so pin it to IPv4 loopback.
     services.epmd.listenStream = mkIf cfg.enable_onlyoffice "127.0.0.1";
 
-    # OnlyOffice's WOPI discovery resolves `newFileTemplate` (default
-    # "../../document-templates/new") relative to the docservice cwd. Inside
-    # the bwrap sandbox cwd is "/", so the relative path resolves to
-    # /document-templates/new which doesn't exist — readdir fails, the
-    # in-process cache becomes {}, and /hosting/discovery emits <app> entries
-    # with zero <action> children. OpenCloud then registers no file handlers.
-    # Rewrite the path to absolute (the FHS rootfs is bound under /var inside
-    # the sandbox, so the templates we touch in flake.nix land there).
+    # OnlyOffice's WOPI discovery reads `services.CoAuthoring.server.newFileTemplate`
+    # and scandirs `<that>/<TEMPLATES_DEFAULT_LOCALE>/` (en-US) to decide which
+    # file extensions to advertise. Upstream default is a cwd-relative path
+    # ("../../document-templates/new"); inside the bwrap sandbox cwd is "/", so
+    # it resolves to /document-templates/new — doesn't exist, readdir fails, the
+    # in-process cache becomes {}, /hosting/discovery emits <app> entries with
+    # zero <action> children, and OpenCloud registers no file handlers.
+    #
+    # Fix: create the templates on the host under /var/lib/onlyoffice/... (which
+    # is bind-mounted into the sandbox, so the files become visible at the same
+    # path inside), then rewrite the config to an absolute path pointing there.
+    # NODE_ENV=production-linux makes node-config merge production-linux.json on
+    # top of default.json, so we must patch BOTH or the production override
+    # clobbers our fix.
     systemd.services.onlyoffice-docservice.serviceConfig.ExecStartPre =
       mkIf cfg.enable_onlyoffice (lib.mkAfter [
-        (pkgs.writeShellScript "onlyoffice-fix-templates-path" ''
-          ${pkgs.jq}/bin/jq '.services.CoAuthoring.server.newFileTemplate = "/var/www/onlyoffice/documentserver/document-templates/new"' \
-            /run/onlyoffice/config/default.json \
-            | ${pkgs.moreutils}/bin/sponge /run/onlyoffice/config/default.json
+        (pkgs.writeShellScript "onlyoffice-fix-templates" ''
+          set -eu
+          tmpl=/var/lib/onlyoffice/documentserver/document-templates/new/en-US
+          mkdir -p "$tmpl"
+          for ext in docx docxf xlsx pptx pdf odt ods odp rtf txt csv html epub fb2; do
+            : > "$tmpl/new.$ext"
+          done
+          for f in /run/onlyoffice/config/default.json /run/onlyoffice/config/production-linux.json; do
+            ${pkgs.jq}/bin/jq \
+              '.services.CoAuthoring.server.newFileTemplate = "/var/lib/onlyoffice/documentserver/document-templates/new"' \
+              "$f" | ${pkgs.moreutils}/bin/sponge "$f"
+          done
         '')
       ]);
 
