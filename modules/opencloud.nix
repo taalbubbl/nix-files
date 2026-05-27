@@ -214,25 +214,23 @@ in {
     };
 
     # The onlyoffice module automatically creates the virtualhost.
-    # We just extend it with SSL and our regex hash-stripping route.
+    # We deeply inject our customized asset tracking filter cleanly.
     services.nginx.virtualHosts."office.${hostname}" = mkIf cfg.enable_onlyoffice {
       enableACME = true;
       forceSSL = true;
 
-      # Override the default location matching block by explicitly mapping 
-      # the exact long version hash string that OpenCloud constructs!
-      locations = {
-        "~* ^/[0-9]+\\.[0-9]+\\.[0-9]+-[a-z0-9]+/(web-apps|sdkjs|sdkjs-plugins|fonts|dictionaries)(/.*)$" = {
-          extraConfig = ''
-            expires 365d;
-            alias ${config.services.onlyoffice.package}/var/www/onlyoffice/documentserver/$1$2;
-            
-            # Add necessary CORS adjustments so OpenCloud can render it inside an iframe safely
-            add_header Access-Control-Allow-Origin "https://cloud.${hostname}" always;
-            add_header Access-Control-Allow-Methods "GET, POST, OPTIONS" always;
-            add_header Access-Control-Allow-Headers "Authorization, Content-Type, X-Requested-With" always;
-          '';
-        };
+      # Notice the direct attribute string configuration. This updates the location 
+      # structure cleanly without erasing the module's core locations!
+      locations."~* ^/[0-9]+\\.[0-9]+\\.[0-9]+-[a-z0-9]+/(web-apps|sdkjs|sdkjs-plugins|fonts|dictionaries)(/.*)$" = {
+        extraConfig = ''
+          expires 365d;
+          alias ${config.services.onlyoffice.package}/var/www/onlyoffice/documentserver/$1$2;
+          
+          # Add necessary CORS adjustments so OpenCloud can render it inside an iframe safely
+          add_header Access-Control-Allow-Origin "https://cloud.${hostname}" always;
+          add_header Access-Control-Allow-Methods "GET, POST, OPTIONS" always;
+          add_header Access-Control-Allow-Headers "Authorization, Content-Type, X-Requested-With" always;
+        '';
       };
 
       # Inject global framing security exemptions
