@@ -50,7 +50,10 @@
             base.passthru.fileconverter
           ];
           extraBuildCommands = ''
-            mkdir -p $out/var/www
+            # /var/lib/onlyoffice/ must exist in the rootfs so bwrap has a
+            # mount point for the host bind below (otherwise bwrap tries to
+            # mkdir parents in the read-only rootfs and aborts).
+            mkdir -p $out/var/{lib/onlyoffice,www}
             cp -ar ${base}/var/www/* $out/var/www/
           '';
           extraBwrapArgs = [
