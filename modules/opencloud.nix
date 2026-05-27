@@ -90,6 +90,12 @@ in {
     # <proof-key> element and OpenCloud rejects every callback. Disable proof-key
     # verification — JWT (COLLABORATION_OO_SECRET) still authenticates the channel.
     COLLABORATION_APP_PROOF_DISABLE = mkIf cfg.enable_onlyoffice "true";
+
+    # === ADD THESE TWO LINES ===
+        # Force the collaboration framework to recognize OpenCloud as the parent origin domain
+        COLLABORATION_APP_PARENT_ORIGIN = "https://cloud.${hostname}";
+        PROXY_ALLOWED_ORIGINS = "https://cloud.${hostname},https://office.${hostname},https://wopi.${hostname}";
+      };
   };
 
   settings = {
