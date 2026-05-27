@@ -224,22 +224,26 @@ in {
   services.nginx.virtualHosts."office.${hostname}" = mkIf cfg.enable_onlyoffice {
     enableACME = true;
     forceSSL = true;
-    
-    # 1. Handle our version hash slicing (executed first)
-    extraConfig = ''
-      rewrite ^/[0-9]+\.[0-9]+\.[0-9]+-[a-z0-9]+(/.*)$ /$1 last;
 
-      # 2. Fix the 404 in iframe: Override OnlyOffice's strict security limits
-      # This allows cloud.taalbubbl.org to read assets out of the office subdomain.
-      add_header Access-Control-Allow-Origin "https://cloud.${hostname}" always;
-      add_header Access-Control-Allow-Methods "GET, POST, OPTIONS" always;
-      add_header Access-Control-Allow-Headers "Authorization, Content-Type, X-Requested-With" always;
-      
-      # Overwrite standard 'DENY' or 'SAMEORIGIN' frames so OpenCloud can nest the editor iframe
+    # Override the default location matching block by explicitly mapping 
+    # the exact long version hash string that OpenCloud constructs!
+    locations = {
+      "~* ^/[0-9]+\\.[0-9]+\\.[0-9]+-[a-z0-9]+/(web-apps|sdkjs|sdkjs-plugins|fonts|dictionaries)(/.*)$" = {
+        extraConfig = ''
+          expires 365d;
+          alias ${config.services.onlyoffice.package}/var/www/onlyoffice/documentserver/$1$2;
+          
+          # Add necessary CORS adjustments so OpenCloud can render it inside an iframe safely
+          add_header Access-Control-Allow-Origin "https://cloud.${hostname}" always;
+          add_header Access-Control-Allow-Methods "GET, POST, OPTIONS" always;
+          add_header Access-Control-Allow-Headers "Authorization, Content-Type, X-Requested-With" always;
+        '';
+      };
+    };
+
+    # Inject global framing security exemptions
+    extraConfig = ''
       add_header X-Frame-Options "ALLOW-FROM https://cloud.${hostname}" always;
-      proxy_hide_header X-Frame-Options;
-      
-      # Tell browsers it is safe to execute cross-domain scripts from this endpoint
       add_header Content-Security-Policy "frame-ancestors 'self' https://cloud.${hostname}" always;
     '';
   };
