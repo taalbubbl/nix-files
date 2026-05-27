@@ -86,6 +86,10 @@ in {
         # Public URL where OnlyOffice (running in podman) calls back to WOPI; the
         # internal default is localhost:9300 which is unreachable from the container.
         COLLABORATION_WOPI_SRC = mkIf cfg.enable_onlyoffice "https://wopi.${hostname}";
+        # Force the service bind behavior exactly as specified in the docs
+        COLLABORATION_HTTP_ADDR = "127.0.0.1:${toString wopi_port}";
+        # Tell the proxy container framework to route the internal WOPI endpoint mapping
+        PROXY_ENABLE_WOPI = "true";
         # OnlyOffice's nixpkgs package doesn't generate the RSA proof keys (publicKey/
         # modulus/exponent stay empty in config), so its WOPI discovery has no
         # <proof-key> element and OpenCloud rejects every callback. Disable proof-key
@@ -106,6 +110,8 @@ in {
           https_addr = opencloud_url;
           csp_config_file_location = "/etc/opencloud/csp.yaml";
           auto_provision_accounts = true;
+          # Map the web endpoint routing boundary
+          wopi_url = "https://wopi.${hostname}";
           role_assignment = {
             driver = "oidc";
             oidc_role_mapper = {
@@ -327,7 +333,13 @@ in {
         enableACME = true;
         forceSSL = true;
         locations."/" = {
-          proxyPass = "http://localhost:${toString wopi_port}";
+          proxyPass = "http://127.0.0.1:${toString wopi_port}";
+          extraConfig = ''
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header X-Forwarded-Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          '';
         };
       };
     };
