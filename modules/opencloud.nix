@@ -225,11 +225,15 @@ in {
         extraConfig = ''
           expires 365d;
           alias ${config.services.onlyoffice.package}/var/www/onlyoffice/documentserver/$1$2;
-          
-          # Add necessary CORS adjustments so OpenCloud can render it inside an iframe safely
+
+          # CORS for cross-origin asset fetches from the OpenCloud SPA iframe.
           add_header Access-Control-Allow-Origin "https://cloud.${hostname}" always;
           add_header Access-Control-Allow-Methods "GET, POST, OPTIONS" always;
           add_header Access-Control-Allow-Headers "Authorization, Content-Type, X-Requested-With" always;
+          # nginx's add_header drops parent headers as soon as ANY add_header
+          # appears at this level, so repeat the server-level ones here.
+          add_header X-Frame-Options "ALLOW-FROM https://cloud.${hostname}" always;
+          add_header Content-Security-Policy "frame-ancestors 'self' https://cloud.${hostname}" always;
         '';
       };
 
