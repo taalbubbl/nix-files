@@ -293,6 +293,22 @@ in {
               '.services.CoAuthoring.server.newFileTemplate = "/var/lib/onlyoffice/documentserver/document-templates/new"' \
               "$f" | ${pkgs.moreutils}/bin/sponge "$f"
           done
+          # The wopi.{word,cell,slide,pdf}{View,Edit} arrays drive which file
+          # extensions get emitted as <action ext="..."> in /hosting/discovery.
+          # Upstream defaults are empty arrays — that's why apps came out with
+          # zero actions and OpenCloud's collaboration service registered no
+          # handlers. Populate with the formats OnlyOffice actually supports.
+          ${pkgs.jq}/bin/jq '
+              .wopi.wordView  = ["odt","rtf","txt","doc","docx","xml","fb2","epub","html","mht","mhtml","stw","sxw","wps","wpt","ott","dot","dotx","dotm","docm","oform","docxf"]
+            | .wopi.wordEdit  = ["docx","docxf","oform","doc","odt","rtf","txt","html","ott","dotx"]
+            | .wopi.cellView  = ["xls","xlsx","ods","csv","fods","gnumeric","sxc","ots","xlsb","xlsm","xlt","xltm","xltx","wks","wk1","wk2","wk3","wk4"]
+            | .wopi.cellEdit  = ["xlsx","xls","ods","csv","ots","xltx"]
+            | .wopi.slideView = ["pptx","ppt","odp","fodp","otp","pot","potm","potx","pps","ppsm","ppsx","pptm","sxi","key"]
+            | .wopi.slideEdit = ["pptx","ppt","odp","otp","potx"]
+            | .wopi.pdfView   = ["pdf","xps","oxps","djvu"]
+            | .wopi.pdfEdit   = ["pdf"]
+          ' /run/onlyoffice/config/default.json \
+            | ${pkgs.moreutils}/bin/sponge /run/onlyoffice/config/default.json
         '')
       ]);
 
