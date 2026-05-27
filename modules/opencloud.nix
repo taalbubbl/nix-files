@@ -99,6 +99,12 @@ in {
         # Force the collaboration framework to recognize OpenCloud as the parent origin domain
         COLLABORATION_APP_PARENT_ORIGIN = "https://cloud.${hostname}";
         PROXY_ALLOWED_ORIGINS = "https://cloud.${hostname},https://office.${hostname},https://wopi.${hostname}";
+        # Force opencloud frontend handler to forward documents explicitly to the collaboration microservice
+  FRONTEND_SECURE_VIEW_APP_ADDR = "eu.opencloud.api.collaboration";
+  
+  # Tell the server engine exactly which app matches the registration context
+  COLLABORATION_APP_NAME = "OnlyOffice";
+  COLLABORATION_APP_PRODUCT = "OnlyOffice";
       };
 
       settings = {
@@ -169,8 +175,10 @@ in {
           cs3api.datagateway.insecure = true;
         };
 
-        frontend.app_handler.view_app_addr = mkIf cfg.enable_onlyoffice "eu.opencloud.api.collaboration";
-      };
+        frontend.app_handler = {
+          view_app_addr = "eu.opencloud.api.collaboration";
+          secure_view_app_addr = "eu.opencloud.api.collaboration";
+        };
     };
 
     environment.etc."opencloud/csp.yaml".text = ''
