@@ -219,17 +219,23 @@ in {
     enableACME = true;
     forceSSL = true;
     
-    # We use a top-level rewrite rule. This executes BEFORE Nginx begins 
-    # matching any location blocks (like "/" or module-internal blocks).
-    # It catches any version-hashed asset request and strips out the hash
-    # immediately, making the request clean before it hits any routing rules.
+    # 1. Handle our version hash slicing (executed first)
     extraConfig = ''
       rewrite ^/[0-9]+\.[0-9]+\.[0-9]+-[a-z0-9]+(/.*)$ /$1 last;
-    '';
 
-    # Do not declare locations."/" or any other location blocks here. 
-    # The default module code will handle the actual proxying now that the 
-    # incoming URIs are safely cleaned up by the rewrite.
+      # 2. Fix the 404 in iframe: Override OnlyOffice's strict security limits
+      # This allows cloud.taalbubbl.org to read assets out of the office subdomain.
+      add_header Access-Control-Allow-Origin "https://cloud.${hostname}" always;
+      add_header Access-Control-Allow-Methods "GET, POST, OPTIONS" always;
+      add_header Access-Control-Allow-Headers "Authorization, Content-Type, X-Requested-With" always;
+      
+      # Overwrite standard 'DENY' or 'SAMEORIGIN' frames so OpenCloud can nest the editor iframe
+      add_header X-Frame-Options "ALLOW-FROM https://cloud.${hostname}" always;
+      proxy_hide_header X-Frame-Options;
+      
+      # Tell browsers it is safe to execute cross-domain scripts from this endpoint
+      add_header Content-Security-Policy "frame-ancestors 'self' https://cloud.${hostname}" always;
+    '';
   };
   # OnlyOffice pulls in RabbitMQ which needs epmd. epmd defaults to IPv6-only and
   # this host has IPv6 disabled, so pin it to IPv4 loopback.
