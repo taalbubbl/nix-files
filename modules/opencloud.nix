@@ -211,6 +211,7 @@ in {
     '';
 
     services.onlyoffice = mkIf cfg.enable_onlyoffice {
+      loglevel = "info";
       enable = true;
       hostname = "office.${hostname}";
       port = 9982;
