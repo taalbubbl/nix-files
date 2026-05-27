@@ -203,7 +203,7 @@ in {
         manifest-src: ["'self'"]
         frame-ancestors: ["'self'", "https://*.${hostname}"]
     '';
-    
+
     services.onlyoffice = mkIf cfg.enable_onlyoffice {
       enable = true;
       hostname = "office.${hostname}";
@@ -214,33 +214,34 @@ in {
     };
 
     # The onlyoffice module automatically creates the virtualhost.
-    # We deeply inject our customized asset tracking filter cleanly.
-    # The onlyoffice module automatically creates the virtualhost.
-    # We deeply inject our customized asset tracking filter cleanly.
-    # The onlyoffice module automatically creates the virtualhost.
-    # We strip the dirty Nix derivation hash off the requested assets string.
+    # The OpenCloud SPA prepends a cache-busting "<version>-<nixhash>/" prefix
+    # to every OnlyOffice asset URL (e.g. /9.3.1-cyafpzzj.../web-apps/...).
+    # The docservice itself serves these paths at the ROOT (/web-apps/...),
+    # NOT under a version directory, so we strip the entire prefix.
     services.nginx.virtualHosts."office.${hostname}" = mkIf cfg.enable_onlyoffice {
       enableACME = true;
       forceSSL = true;
 
       extraConfig = ''
-        # Matches the clean version block, strips out the long Nix derivation hash string,
-        # and cleanly translates it to what the standard /web-apps/ handlers expect.
-        rewrite ^/([0-9]+\.[0-9]+\.[0-9]+)-[^/]+/(web-apps|sdkjs|sdkjs-plugins|fonts|dictionaries|welcome)(/.*)$ /$1/$2$3 last;
-        rewrite ^/([0-9]+\.[0-9]+\.[0-9]+)-[^/]+/(doc|downloadas)(/.*)$ /$1/$2$3 last;
+        # Strip the cache-busting "<version>-<nixhash>/" prefix entirely.
+        # Upstream OnlyOffice serves assets at the unprefixed root path.
+        rewrite ^/[0-9]+\.[0-9]+\.[0-9]+-[^/]+/(web-apps|sdkjs|sdkjs-plugins|fonts|dictionaries|welcome)(/.*)$ /$1$2 last;
+        rewrite ^/[0-9]+\.[0-9]+\.[0-9]+-[^/]+/(doc|downloadas)(/.*)$ /$1$2 last;
 
-        # Inject global framing security exemptions
+        # Inject global framing security exemptions so the editor can be
+        # iframed by the OpenCloud SPA.
         add_header X-Frame-Options "ALLOW-FROM https://cloud.${hostname}" always;
         add_header Content-Security-Policy "frame-ancestors 'self' https://cloud.${hostname}" always;
       '';
 
-      # Ensure frames rendering assets can communicate across domains inside the OpenCloud SPA interface
-      locations."~ ^/([0-9]+\.[0-9]+\.[0-9]+)?/(web-apps|sdkjs|sdkjs-plugins|fonts|dictionaries)" = {
+      # Ensure frames rendering assets can communicate across domains
+      # inside the OpenCloud SPA interface.
+      locations."~ ^/(web-apps|sdkjs|sdkjs-plugins|fonts|dictionaries)" = {
         extraConfig = ''
           add_header Access-Control-Allow-Origin "https://cloud.${hostname}" always;
           add_header Access-Control-Allow-Methods "GET, POST, OPTIONS" always;
           add_header Access-Control-Allow-Headers "Authorization, Content-Type, X-Requested-With" always;
-          
+
           # Re-assert frame permissions at the location level
           add_header X-Frame-Options "ALLOW-FROM https://cloud.${hostname}" always;
           add_header Content-Security-Policy "frame-ancestors 'self' https://cloud.${hostname}" always;
@@ -275,7 +276,7 @@ in {
       virtualHosts."cloud.${hostname}" = {
         forceSSL = true;
         enableACME = true;
-    
+
         # Everything path-related goes inside this block
         locations = {
           "/" = {
@@ -321,7 +322,7 @@ in {
           };
         }; # End of locations
       };
-    
+
       virtualHosts."wopi.${hostname}" = {
         enableACME = true;
         forceSSL = true;
@@ -330,7 +331,7 @@ in {
         };
       };
     };
-    
+
     services.radicale = mkIf cfg.enable_radicale {
       enable = true;
       settings = {
@@ -366,10 +367,9 @@ in {
     systemd.services.radicale.serviceConfig = mkIf cfg.enable_radicale {
       ReadWritePaths = [ cfg.path_radicale ];
       # Ensure the service can create the folder if it's missing
-      ConfigurationDirectory = "radicale"; 
+      ConfigurationDirectory = "radicale";
     };
 
     networking.firewall.allowedTCPPorts = [9200 9980 8222 4222 9998 5232];
   };
 }
-
