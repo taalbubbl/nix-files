@@ -197,6 +197,9 @@ in {
           - "https://docs.opencloud.eu"
           - "https://*.${hostname}"
           ${optionalString cfg.enable_onlyoffice "- \"https://embed.diagrams.net/\""}
+          ${optionalString cfg.enable_onlyoffice "- \"https://office.${hostname}\""}
+          ${optionalString cfg.enable_onlyoffice "- \"https://wopi.${hostname}\""}
+         
         img-src:
           - "'self'"
           - "data:"
@@ -230,28 +233,21 @@ in {
       forceSSL = true;
 
       extraConfig = ''
-        # Strip the cache-busting "<version>-<nixhash>/" prefix entirely.
-        # Upstream OnlyOffice serves assets at the unprefixed root path.
         rewrite ^/[0-9]+\.[0-9]+\.[0-9]+-[^/]+/(web-apps|sdkjs|sdkjs-plugins|fonts|dictionaries|welcome)(/.*)$ /$1$2 last;
         rewrite ^/[0-9]+\.[0-9]+\.[0-9]+-[^/]+/(doc|downloadas)(/.*)$ /$1$2 last;
 
-        # Inject global framing security exemptions so the editor can be
-        # iframed by the OpenCloud SPA.
-        add_header X-Frame-Options "ALLOW-FROM https://cloud.${hostname}" always;
-        add_header Content-Security-Policy "frame-ancestors 'self' https://cloud.${hostname}" always;
+        # REMOVED X-Frame-Options ALLOW-FROM entirely. Use only standard CSP:
+        add_header Content-Security-Policy "frame-ancestors 'self' https://cloud.${hostname} https://wopi.${hostname}" always;
       '';
 
-      # Ensure frames rendering assets can communicate across domains
-      # inside the OpenCloud SPA interface.
       locations."~ ^/(web-apps|sdkjs|sdkjs-plugins|fonts|dictionaries)" = {
         extraConfig = ''
           add_header Access-Control-Allow-Origin "https://cloud.${hostname}" always;
           add_header Access-Control-Allow-Methods "GET, POST, OPTIONS" always;
           add_header Access-Control-Allow-Headers "Authorization, Content-Type, X-Requested-With" always;
 
-          # Re-assert frame permissions at the location level
-          add_header X-Frame-Options "ALLOW-FROM https://cloud.${hostname}" always;
-          add_header Content-Security-Policy "frame-ancestors 'self' https://cloud.${hostname}" always;
+          # Align location-level framing to match
+          add_header Content-Security-Policy "frame-ancestors 'self' https://cloud.${hostname} https://wopi.${hostname}" always;
         '';
       };
     };
