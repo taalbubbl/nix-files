@@ -303,15 +303,20 @@ in {
           # extensions get emitted as <action ext="..."> in /hosting/discovery.
           # Upstream defaults are empty arrays — that's why apps came out with
           # zero actions and OpenCloud's collaboration service registered no
-          # handlers. Populate with the formats OnlyOffice actually supports.
+          # handlers.
+          #
+          # Restricted to formats OnlyOffice handles natively (no x2t
+          # conversion). ODF (odt/ods/odp) and legacy MS (doc/xls/ppt) need
+          # x2t which fails with ExitCode 80 in our packaging — re-add them
+          # only once x2t is verified working for those formats.
           ${pkgs.jq}/bin/jq '
-              .wopi.wordView  = ["odt","rtf","txt","doc","docx","xml","fb2","epub","html","mht","mhtml","stw","sxw","wps","wpt","ott","dot","dotx","dotm","docm","oform","docxf"]
-            | .wopi.wordEdit  = ["docx","docxf","oform","doc","odt","rtf","txt","html","ott","dotx"]
-            | .wopi.cellView  = ["xls","xlsx","ods","csv","fods","gnumeric","sxc","ots","xlsb","xlsm","xlt","xltm","xltx","wks","wk1","wk2","wk3","wk4"]
-            | .wopi.cellEdit  = ["xlsx","xls","ods","csv","ots","xltx"]
-            | .wopi.slideView = ["pptx","ppt","odp","fodp","otp","pot","potm","potx","pps","ppsm","ppsx","pptm","sxi","key"]
-            | .wopi.slideEdit = ["pptx","ppt","odp","otp","potx"]
-            | .wopi.pdfView   = ["pdf","xps","oxps","djvu"]
+              .wopi.wordView  = ["docx","docxf","oform"]
+            | .wopi.wordEdit  = ["docx","docxf","oform"]
+            | .wopi.cellView  = ["xlsx"]
+            | .wopi.cellEdit  = ["xlsx"]
+            | .wopi.slideView = ["pptx"]
+            | .wopi.slideEdit = ["pptx"]
+            | .wopi.pdfView   = ["pdf"]
             | .wopi.pdfEdit   = ["pdf"]
           ' /run/onlyoffice/config/default.json \
             | ${pkgs.moreutils}/bin/sponge /run/onlyoffice/config/default.json
