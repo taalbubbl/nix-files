@@ -31,11 +31,15 @@
       #   (3) The original buildFHSEnv references `onlyoffice-documentserver` from a
       #       local let-binding, not the overlaid attribute, so we pass our patched
       #       `base` explicitly when copying the var/www tree.
-      # The FHS sandbox bwrap defaults don't bind /var/lib/onlyoffice/ from
-      # the host, so the docservice can't see the templates we populate there
-      # at runtime (modules/opencloud.nix ExecStartPre). Re-call buildFHSEnv
-      # with the extra bind. `overrideAttrs` on the wrapper alone doesn't
-      # re-run buildFHSEnv — must construct a new one.
+      # Two things upstream's buildFHSEnv for onlyoffice doesn't do by itself:
+      #   (1) Copy the package's /var/www tree (documentserver assets — EJS
+      #       templates, web-apps, fonts, etc.) into the FHS rootfs. Without
+      #       this, the docservice can't render WOPI editor views.
+      #   (2) Bind the host's /var/lib/onlyoffice/ inside the sandbox so the
+      #       templates we populate at runtime (modules/opencloud.nix
+      #       ExecStartPre) are visible to the docservice.
+      # `overrideAttrs` on the wrapper alone doesn't re-run buildFHSEnv — must
+      # construct a new one.
       onlyoffice-documentserver = let
         base = prev.onlyoffice-documentserver;
         fhsNew = prev.buildFHSEnv {
@@ -45,6 +49,10 @@
             base
             base.passthru.fileconverter
           ];
+          extraBuildCommands = ''
+            mkdir -p $out/var/www
+            cp -ar ${base}/var/www/* $out/var/www/
+          '';
           extraBwrapArgs = [
             "--bind var/lib/onlyoffice/ var/lib/onlyoffice/"
           ];
