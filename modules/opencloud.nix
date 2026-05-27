@@ -213,12 +213,14 @@ in {
   # with Express's "Cannot GET". Strip the prefix at the server level instead;
   # the existing `location /9.3.1/` then proxies the bare URI to docservice,
   # exactly like the unprefixed URL that already works.
+  # The onlyoffice module automatically creates the virtualhost.
+  # We just extend it with SSL and our regex hash-stripping route.
   services.nginx.virtualHosts."office.${hostname}" = mkIf cfg.enable_onlyoffice {
     enableACME = true;
     forceSSL = true;
     
-    # Catch the versioned app-asset paths with regex (which takes precedence)
-    # and strip the hash out dynamically before proxying to OnlyOffice
+    # Catch the versioned app-asset paths with regex (which takes precedence over the default "/")
+    # and strip the hash out dynamically before proxying to OnlyOffice.
     locations."~* ^/[0-9]+\\.[0-9]+\\.[0-9]+-[a-z0-9]+/(.*)$" = {
       proxyPass = "http://127.0.0.1:${toString config.services.onlyoffice.port}/$1";
       extraConfig = ''
@@ -229,19 +231,8 @@ in {
       '';
     };
 
-    # Standard fallback location block for base routes
-    locations."/" = {
-      proxyPass = "http://127.0.0.1:${toString config.services.onlyoffice.port}";
-      proxyWebsockets = true;
-      extraConfig = ''
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "Upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-      '';
-    };
+    # DO NOT define locations."/" here. 
+    # The upstream module handles it safely without causing duplicate directives.
   };
   # OnlyOffice pulls in RabbitMQ which needs epmd. epmd defaults to IPv6-only and
   # this host has IPv6 disabled, so pin it to IPv4 loopback.
