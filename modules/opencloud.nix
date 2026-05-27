@@ -58,6 +58,7 @@ in {
       default = false;
     };
   };
+
   config = mkIf cfg.enable {
     services.opencloud = {
       enable = true;
@@ -65,108 +66,107 @@ in {
       port = cfg.port;
       stateDir = cfg.data_dir;
 
-  environment = {
-    # Service wiring — no YAML config equivalent in the NixOS module
-    OC_EXCLUDE_RUN_SERVICES = "idp";
-    OC_ADD_RUN_SERVICES = "collaboration";
-    # Running behind a reverse proxy
-    PROXY_TLS = "false";
-    OC_INSECURE = "true";
-    # Env vars take precedence over settings file — ensure proxy uses Authelia, not itself
-    OC_OIDC_ISSUER = "https://auth.${hostname}";
-    PROXY_OIDC_ISSUER = "https://auth.${hostname}";
-    # web.yaml's `oidc.scope` was being silently ignored; the env var is the
-    # only reliable way to make the SPA request the groups scope
-    WEB_OIDC_SCOPE = "openid profile email groups";
-    # Secrets must be env vars (sops writes a file, not an inline value)
-    OC_JWT_SECRET_FILE = config.sops.secrets.opencloud-jwt-secret.path;
-    COLLABORATION_JWT_SECRET_FILE = mkIf cfg.enable_onlyoffice config.sops.secrets.opencloud-collab-secret.path;
-    COLLABORATION_OO_SECRET_FILE = config.sops.secrets.opencloud-collab-secret.path;
-    # Public URL where OnlyOffice (running in podman) calls back to WOPI; the
-    # internal default is localhost:9300 which is unreachable from the container.
-    COLLABORATION_WOPI_SRC = mkIf cfg.enable_onlyoffice "https://wopi.${hostname}";
-    # OnlyOffice's nixpkgs package doesn't generate the RSA proof keys (publicKey/
-    # modulus/exponent stay empty in config), so its WOPI discovery has no
-    # <proof-key> element and OpenCloud rejects every callback. Disable proof-key
-    # verification — JWT (COLLABORATION_OO_SECRET) still authenticates the channel.
-    COLLABORATION_APP_PROOF_DISABLE = mkIf cfg.enable_onlyoffice "true";
+      environment = {
+        # Service wiring — no YAML config equivalent in the NixOS module
+        OC_EXCLUDE_RUN_SERVICES = "idp";
+        OC_ADD_RUN_SERVICES = "collaboration";
+        # Running behind a reverse proxy
+        PROXY_TLS = "false";
+        OC_INSECURE = "true";
+        # Env vars take precedence over settings file — ensure proxy uses Authelia, not itself
+        OC_OIDC_ISSUER = "https://auth.${hostname}";
+        PROXY_OIDC_ISSUER = "https://auth.${hostname}";
+        # web.yaml's `oidc.scope` was being silently ignored; the env var is the
+        # only reliable way to make the SPA request the groups scope
+        WEB_OIDC_SCOPE = "openid profile email groups";
+        # Secrets must be env vars (sops writes a file, not an inline value)
+        OC_JWT_SECRET_FILE = config.sops.secrets.opencloud-jwt-secret.path;
+        COLLABORATION_JWT_SECRET_FILE = mkIf cfg.enable_onlyoffice config.sops.secrets.opencloud-collab-secret.path;
+        COLLABORATION_OO_SECRET_FILE = config.sops.secrets.opencloud-collab-secret.path;
+        # Public URL where OnlyOffice (running in podman) calls back to WOPI; the
+        # internal default is localhost:9300 which is unreachable from the container.
+        COLLABORATION_WOPI_SRC = mkIf cfg.enable_onlyoffice "https://wopi.${hostname}";
+        # OnlyOffice's nixpkgs package doesn't generate the RSA proof keys (publicKey/
+        # modulus/exponent stay empty in config), so its WOPI discovery has no
+        # <proof-key> element and OpenCloud rejects every callback. Disable proof-key
+        # verification — JWT (COLLABORATION_OO_SECRET) still authenticates the channel.
+        COLLABORATION_APP_PROOF_DISABLE = mkIf cfg.enable_onlyoffice "true";
 
-    # === ADD THESE TWO LINES ===
         # Force the collaboration framework to recognize OpenCloud as the parent origin domain
         COLLABORATION_APP_PARENT_ORIGIN = "https://cloud.${hostname}";
         PROXY_ALLOWED_ORIGINS = "https://cloud.${hostname},https://office.${hostname},https://wopi.${hostname}";
       };
-  };
 
-  settings = {
-    log.level = "debug";
+      settings = {
+        log.level = "debug";
 
-    proxy = {
-      http.addr = "${internal_host}:${toString opencould_port}";
-      tls = false;
-      https_addr = opencloud_url;
-      csp_config_file_location = "/etc/opencloud/csp.yaml";
-      auto_provision_accounts = true;
-      role_assignment = {
-        driver = "oidc";
-        oidc_role_mapper = {
-          role_claim = "groups";
-          # Defaults get nullified once we declare any field under `oidc_role_mapper`,
-          # so list the mappings explicitly. Claim value `admin` matches what we set in
-          # authelia-users.yaml.
-          role_mapping = [
-            { role_name = "admin";      claim_value = "admin"; }
-            { role_name = "spaceadmin"; claim_value = "opencloudSpaceAdmin"; }
-            { role_name = "user";       claim_value = "opencloudUser"; }
-            { role_name = "user-light"; claim_value = "opencloudGuest"; }
-          ];
+        proxy = {
+          http.addr = "${internal_host}:${toString opencould_port}";
+          tls = false;
+          https_addr = opencloud_url;
+          csp_config_file_location = "/etc/opencloud/csp.yaml";
+          auto_provision_accounts = true;
+          role_assignment = {
+            driver = "oidc";
+            oidc_role_mapper = {
+              role_claim = "groups";
+              # Defaults get nullified once we declare any field under `oidc_role_mapper`,
+              # so list the mappings explicitly. Claim value `admin` matches what we set in
+              # authelia-users.yaml.
+              role_mapping = [
+                { role_name = "admin";      claim_value = "admin"; }
+                { role_name = "spaceadmin"; claim_value = "opencloudSpaceAdmin"; }
+                { role_name = "user";       claim_value = "opencloudUser"; }
+                { role_name = "user-light"; claim_value = "opencloudGuest"; }
+              ];
+            };
+          };
+
+          user_oidc_claim = "preferred_username";
+          user_cs3_claim = "username";
+          autoprovision_claim_username = "preferred_username";
+          autoprovision_claim_email = "email";
+          autoprovision_claim_displayname = "name";
+          oidc = {
+            issuer = "https://auth.${hostname}";
+            rewrite_well_known = true;
+            skip_user_info = false;
+            access_token_verify_method = "jwt";
+          };
         };
+
+        storage_users.driver = "ocis";
+        storage.metadata_driver = "ocis";
+
+        web.web.config.oidc = {
+          authority = "https://auth.${hostname}";
+          metadata_url = "https://auth.${hostname}/.well-known/openid-configuration";
+          client_id = "web";
+          scope = "openid profile email groups";
+        };
+
+        system_user.id = "akadmin";
+
+        collaboration = mkIf cfg.enable_onlyoffice {
+          log.level = "info";
+          app = {
+            name = "OnlyOffice";
+            product = "OnlyOffice";
+            addr = onlyoffice_url;
+            insecure = true;
+          };
+          # YAML key is `wopisrc` (one word), not `wopi.src` — used wrong key before and
+          # the OnlyOffice iframe was getting WOPISrc=https://localhost:9300/... (the
+          # internal collaboration bind addr leaked as default), so the editor couldn't
+          # call back into WOPI from inside the podman container.
+          wopi.wopisrc = "https://wopi.${hostname}";
+          cs3api.datagateway.insecure = true;
+        };
+
+        frontend.app_handler.view_app_addr = mkIf cfg.enable_onlyoffice "eu.opencloud.api.collaboration";
       };
-
-      user_oidc_claim = "preferred_username";
-      user_cs3_claim = "username";
-      autoprovision_claim_username = "preferred_username";
-      autoprovision_claim_email = "email";
-      autoprovision_claim_displayname = "name";
-      oidc = {
-        issuer = "https://auth.${hostname}";
-        rewrite_well_known = true;
-        skip_user_info = false;
-        access_token_verify_method = "jwt";
-      };
     };
 
-    storage_users.driver = "ocis";
-    storage.metadata_driver = "ocis";
-
-    web.web.config.oidc = {
-      authority = "https://auth.${hostname}";
-      metadata_url = "https://auth.${hostname}/.well-known/openid-configuration";
-      client_id = "web";
-      scope = "openid profile email groups";
-    };
-
-    system_user.id = "akadmin";
-
-    collaboration = mkIf cfg.enable_onlyoffice {
-      log.level = "info";
-      app = {
-        name = "OnlyOffice";
-        product = "OnlyOffice";
-        addr = onlyoffice_url;
-        insecure = true;
-      };
-      # YAML key is `wopisrc` (one word), not `wopi.src` — used wrong key before and
-       # the OnlyOffice iframe was getting WOPISrc=https://localhost:9300/... (the
-       # internal collaboration bind addr leaked as default), so the editor couldn't
-       # call back into WOPI from inside the podman container.
-      wopi.wopisrc = "https://wopi.${hostname}";
-      cs3api.datagateway.insecure = true;
-    };
-
-    frontend.app_handler.view_app_addr = mkIf cfg.enable_onlyoffice "eu.opencloud.api.collaboration";
-    };
-    };
     environment.etc."opencloud/csp.yaml".text = ''
       directives:
         connect-src:
@@ -204,146 +204,127 @@ in {
         frame-ancestors: ["'self'", "https://*.${hostname}"]
     '';
     
-  services.onlyoffice = mkIf cfg.enable_onlyoffice {
-    enable = true;
-    hostname = "office.${hostname}";
-    port = 9982;
-    wopi = true;
-    jwtSecretFile = config.sops.secrets.onlyoffice-jwt-secret.path;
-    securityNonceFile = config.sops.secrets.onlyoffice-security-nonce.path;
-  };
-  # The onlyoffice module creates the virtualhost without ACME/SSL — layer them on.
-  # The upstream regex locations for /VERSION-HASH/web-apps/... don't match at
-  # runtime (despite looking correct via nginx -T), so editor iframe URLs fall
-  # through to the Node docservice which has no idea about the prefix and 404s
-  # with Express's "Cannot GET". Strip the prefix at the server level instead;
-  # the existing `location /9.3.1/` then proxies the bare URI to docservice,
-  # exactly like the unprefixed URL that already works.
-  # The onlyoffice module automatically creates the virtualhost.
-  # We just extend it with SSL and our regex hash-stripping route.
-  services.nginx.virtualHosts."office.${hostname}" = mkIf cfg.enable_onlyoffice {
-    enableACME = true;
-    forceSSL = true;
-
-    # Override the default location matching block by explicitly mapping 
-    # the exact long version hash string that OpenCloud constructs!
-    locations = {
-      "~* ^/[0-9]+\\.[0-9]+\\.[0-9]+-[a-z0-9]+/(web-apps|sdkjs|sdkjs-plugins|fonts|dictionaries)(/.*)$" = {
-        extraConfig = ''
-          expires 365d;
-          alias ${config.services.onlyoffice.package}/var/www/onlyoffice/documentserver/$1$2;
-          
-          # Add necessary CORS adjustments so OpenCloud can render it inside an iframe safely
-          add_header Access-Control-Allow-Origin "https://cloud.${hostname}" always;
-          add_header Access-Control-Allow-Methods "GET, POST, OPTIONS" always;
-          add_header Access-Control-Allow-Headers "Authorization, Content-Type, X-Requested-With" always;
-        '';
-      };
+    services.onlyoffice = mkIf cfg.enable_onlyoffice {
+      enable = true;
+      hostname = "office.${hostname}";
+      port = 9982;
+      wopi = true;
+      jwtSecretFile = config.sops.secrets.onlyoffice-jwt-secret.path;
+      securityNonceFile = config.sops.secrets.onlyoffice-security-nonce.path;
     };
 
-    # Inject global framing security exemptions
-    extraConfig = ''
-      add_header X-Frame-Options "ALLOW-FROM https://cloud.${hostname}" always;
-      add_header Content-Security-Policy "frame-ancestors 'self' https://cloud.${hostname}" always;
-    '';
-  };
-  # OnlyOffice pulls in RabbitMQ which needs epmd. epmd defaults to IPv6-only and
-  # this host has IPv6 disabled, so pin it to IPv4 loopback.
-  services.epmd.listenStream = mkIf cfg.enable_onlyoffice "127.0.0.1";
-
-  # The nixpkgs onlyoffice package doesn't ship `onlyoffice-docs-formats.json`,
-  # which is the static file OnlyOffice falls back to when `wopi.{wordView,wordEdit,
-  # cellView,...}` are empty (the default). Without it, the WOPI discovery emits
-  # `<app>` entries with NO `<action>` children, so OpenCloud's app-registry sees
-  # zero file-extension handlers and OnlyOffice is invisible in the UI even though
-  # everything else is wired up. Populate the arrays directly after the upstream
-  # prestart runs so the discovery generator has something to enumerate.
-  systemd.services.onlyoffice-docservice.serviceConfig.ExecStartPre =
-    mkIf cfg.enable_onlyoffice (lib.mkAfter [
-      (pkgs.writeShellScript "onlyoffice-wopi-formats" ''
-        ${pkgs.jq}/bin/jq '
-          .wopi.wordView  = ["odt","rtf","txt","doc","docx","xml","fb2","epub","html","mht","mhtml","stw","sxw","wps","wpt","ott","dot","dotx","dotm","docm","oform","docxf"]
-          | .wopi.wordEdit  = ["docx","docxf","oform","doc","odt","rtf","txt","html","ott","dotx"]
-          | .wopi.cellView  = ["xls","xlsx","ods","csv","fods","gnumeric","sxc","ots","xlsb","xlsm","xlt","xltm","xltx","wks","wk1","wk2","wk3","wk4"]
-          | .wopi.cellEdit  = ["xlsx","xls","ods","csv","ots","xltx"]
-          | .wopi.slideView = ["pptx","ppt","odp","fodp","otp","pot","potm","potx","pps","ppsm","ppsx","pptm","sxi","key"]
-          | .wopi.slideEdit = ["pptx","ppt","odp","otp","potx"]
-          | .wopi.pdfView   = ["pdf","xps","oxps","djvu"]
-          | .wopi.pdfEdit   = ["pdf"]
-        ' /run/onlyoffice/config/default.json | ${pkgs.moreutils}/bin/sponge /run/onlyoffice/config/default.json
-      '')
-    ]);
-
-  security.acme.acceptTerms = true;
-  services.nginx = {
-    virtualHosts."cloud.${hostname}" = {
-      forceSSL = true;
+    # The onlyoffice module automatically creates the virtualhost.
+    # We just extend it with SSL and our regex hash-stripping route.
+    services.nginx.virtualHosts."office.${hostname}" = mkIf cfg.enable_onlyoffice {
       enableACME = true;
-  
-      # Everything path-related goes inside this block
+      forceSSL = true;
+
+      # Override the default location matching block by explicitly mapping 
+      # the exact long version hash string that OpenCloud constructs!
       locations = {
-        "/" = {
-          proxyPass = "http://${internal_host}:${toString opencould_port}";
-          proxyWebsockets = true;
+        "~* ^/[0-9]+\\.[0-9]+\\.[0-9]+-[a-z0-9]+/(web-apps|sdkjs|sdkjs-plugins|fonts|dictionaries)(/.*)$" = {
           extraConfig = ''
-            proxy_buffering off;
-            proxy_cache off;
-            proxy_read_timeout 24h;
-
-            proxy_set_header Authorization $http_authorization;
-            proxy_pass_header Authorization;
-
-            proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_set_header X-Forwarded-Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            expires 365d;
+            alias ${config.services.onlyoffice.package}/var/www/onlyoffice/documentserver/$1$2;
+            
+            # Add necessary CORS adjustments so OpenCloud can render it inside an iframe safely
+            add_header Access-Control-Allow-Origin "https://cloud.${hostname}" always;
+            add_header Access-Control-Allow-Methods "GET, POST, OPTIONS" always;
+            add_header Access-Control-Allow-Headers "Authorization, Content-Type, X-Requested-With" always;
           '';
         };
+      };
 
-        "/caldav/" = mkIf cfg.enable_radicale {
-          proxyPass = "http://127.0.0.1:5232/";
-          extraConfig = "
-            proxy_set_header X-Remote-User $remote_user; # provide username to CalDAV
-            proxy_set_header X-Script-Name /caldav;
-          ";
-        };
-
-        "/.well-known/caldav" = mkIf cfg.enable_radicale {
-          return = "301 $scheme://$host/caldav/";
-        };
-
-        "/carddav/" = mkIf cfg.enable_radicale {
-          proxyPass = "http://127.0.0.1:5232/"; # The trailing slash here is important!
-          extraConfig = "
-            proxy_set_header X-Remote-User $remote_user; # provide username to CalDAV
-            proxy_set_header X-Script-Name /caldav;
-          ";
-        };
-        # "/radicale/" = mkIf cfg.enable_radicale {
-        #   proxyPass = "http://127.0.0.1:5232/";
-        #   extraConfig = "
-        #     proxy_set_header X-Remote-User $remote_user; # provide username to CalDAV
-        #     proxy_set_header X-Script-Name /radicale;
-        #   ";
-        # };
-
-        "/.well-known/carddav" = mkIf cfg.enable_radicale {
-          return = "301 $scheme://$host/carddav/";
-        };
-      }; # End of locations
+      # Inject global framing security exemptions
+      extraConfig = ''
+        add_header X-Frame-Options "ALLOW-FROM https://cloud.${hostname}" always;
+        add_header Content-Security-Policy "frame-ancestors 'self' https://cloud.${hostname}" always;
+      '';
     };
-  
 
-  virtualHosts."wopi.${hostname}" = {
-    enableACME = true;
-    forceSSL = true;
-    locations."/" = {
-      proxyPass = "http://localhost:${toString wopi_port}";
+    # OnlyOffice pulls in RabbitMQ which needs epmd. epmd defaults to IPv6-only and
+    # this host has IPv6 disabled, so pin it to IPv4 loopback.
+    services.epmd.listenStream = mkIf cfg.enable_onlyoffice "127.0.0.1";
+
+    # Populate format rules for WOPI discovery mapping
+    systemd.services.onlyoffice-docservice.serviceConfig.ExecStartPre =
+      mkIf cfg.enable_onlyoffice (lib.mkAfter [
+        (pkgs.writeShellScript "onlyoffice-wopi-formats" ''
+          ${pkgs.jq}/bin/jq '
+            .wopi.wordView  = ["odt","rtf","txt","doc","docx","xml","fb2","epub","html","mht","mhtml","stw","sxw","wps","wpt","ott","dot","dotx","dotm","docm","oform","docxf"]
+            | .wopi.wordEdit  = ["docx","docxf","oform","doc","odt","rtf","txt","html","ott","dotx"]
+            | .wopi.cellView  = ["xls","xlsx","ods","csv","fods","gnumeric","sxc","ots","xlsb","xlsm","xlt","xltm","xltx","wks","wk1","wk2","wk3","wk4"]
+            | .wopi.cellEdit  = ["xlsx","xls","ods","csv","ots","xltx"]
+            | .wopi.slideView = ["pptx","ppt","odp","fodp","otp","pot","potm","potx","pps","ppsm","ppsx","pptm","sxi","key"]
+            | .wopi.slideEdit = ["pptx","ppt","odp","otp","potx"]
+            | .wopi.pdfView   = ["pdf","xps","oxps","djvu"]
+            | .wopi.pdfEdit   = ["pdf"]
+          ' /run/onlyoffice/config/default.json | ${pkgs.moreutils}/bin/sponge /run/onlyoffice/config/default.json
+        '')
+      ]);
+
+    security.acme.acceptTerms = true;
+
+    services.nginx = {
+      virtualHosts."cloud.${hostname}" = {
+        forceSSL = true;
+        enableACME = true;
+    
+        # Everything path-related goes inside this block
+        locations = {
+          "/" = {
+            proxyPass = "http://${internal_host}:${toString opencould_port}";
+            proxyWebsockets = true;
+            extraConfig = ''
+              proxy_buffering off;
+              proxy_cache off;
+              proxy_read_timeout 24h;
+
+              proxy_set_header Authorization $http_authorization;
+              proxy_pass_header Authorization;
+
+              proxy_set_header X-Forwarded-Proto $scheme;
+              proxy_set_header X-Forwarded-Host $host;
+              proxy_set_header X-Real-IP $remote_addr;
+              proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            '';
+          };
+
+          "/caldav/" = mkIf cfg.enable_radicale {
+            proxyPass = "http://127.0.0.1:5232/";
+            extraConfig = ''
+              proxy_set_header X-Remote-User $remote_user; # provide username to CalDAV
+              proxy_set_header X-Script-Name /caldav;
+            '';
+          };
+
+          "/.well-known/caldav" = mkIf cfg.enable_radicale {
+            return = "301 $scheme://$host/caldav/";
+          };
+
+          "/carddav/" = mkIf cfg.enable_radicale {
+            proxyPass = "http://127.0.0.1:5232/"; # The trailing slash here is important!
+            extraConfig = ''
+              proxy_set_header X-Remote-User $remote_user; # provide username to CalDAV
+              proxy_set_header X-Script-Name /caldav;
+            '';
+          };
+
+          "/.well-known/carddav" = mkIf cfg.enable_radicale {
+            return = "301 $scheme://$host/carddav/";
+          };
+        }; # End of locations
+      };
+    
+      virtualHosts."wopi.${hostname}" = {
+        enableACME = true;
+        forceSSL = true;
+        locations."/" = {
+          proxyPass = "http://localhost:${toString wopi_port}";
+        };
+      };
     };
-  };
-  
-  };
-  
+    
     services.radicale = mkIf cfg.enable_radicale {
       enable = true;
       settings = {
@@ -352,7 +333,7 @@ in {
           ssl = false;
         };
         auth = {
-          type = "http_x_remote_user"; # disable authentication, and use the username that OpenCloud provides is
+          type = "http_x_remote_user"; # disable authentication, and use the username that OpenCloud provides
         };
         web = {
           type = "none";
@@ -368,19 +349,19 @@ in {
           response_content_on_debug = true; # only if level=debug
         };
       };
-      
     };
-    # 1. Create the directory automatically
-      systemd.tmpfiles.rules = mkIf cfg.enable_radicale [
-        "d ${cfg.path_radicale} 0750 radicale radicale -"
-      ];
 
-      # 2. Grant the Radicale service permission to access this path
-      systemd.services.radicale.serviceConfig = mkIf cfg.enable_radicale {
-        ReadWritePaths = [ cfg.path_radicale ];
-        # Ensure the service can create the folder if it's missing
-        ConfigurationDirectory = "radicale"; 
-      };
+    # 1. Create the directory automatically
+    systemd.tmpfiles.rules = mkIf cfg.enable_radicale [
+      "d ${cfg.path_radicale} 0750 radicale radicale -"
+    ];
+
+    # 2. Grant the Radicale service permission to access this path
+    systemd.services.radicale.serviceConfig = mkIf cfg.enable_radicale {
+      ReadWritePaths = [ cfg.path_radicale ];
+      # Ensure the service can create the folder if it's missing
+      ConfigurationDirectory = "radicale"; 
+    };
 
     networking.firewall.allowedTCPPorts = [9200 9980 8222 4222 9998 5232];
   };
