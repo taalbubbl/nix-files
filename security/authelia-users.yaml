@@ -38,6 +38,6 @@ users:
     groups:
       - admin
   lukas:
-    displayname: "Lukáš"
+    displayname: "Lukas"
     password: "$argon2id$v=19$m=65536,t=3,p=4$yI37q5bpr7BkaAYnqEaiuQ$p8o4r7Vh40TF9W4In22Ts0gq/+UnGrkTh1DP3w53hrE"
     email: "ilukaspesek@gmail.com"
