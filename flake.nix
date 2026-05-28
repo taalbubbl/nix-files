@@ -12,8 +12,14 @@
     sops-nix.url = "github:Mic92/sops-nix";
 
     # git+ssh is needed
-    taalbubbl.url = "git+ssh://git@github.com/taalbubbl/taalbubbl?ref=main";
-    openpronounce.url = "github:taalbubbl/OpenPronounce";
+    taalbubbl = {
+      url = "git+ssh://git@github.com/taalbubbl/taalbubbl?ref=main";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    openpronounce = {
+      url = "github:taalbubbl/OpenPronounce";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     
   };
 
