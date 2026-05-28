@@ -92,11 +92,11 @@
               {
                   nix.settings = {
                     substituters = [
-                      "https://cache.nixos.org"
+                      
                       "https://nix-files.cachix.org"
                     ];
                     trusted-public-keys = [
-                      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+                      
                       "nix-files.cachix.org-1:nix-files.cachix.org-1:PnXUkf49ZDLHSiaQ0GPgB+FCynpa2A3SsPHRAgX+UrI="
                     ];
                   };
