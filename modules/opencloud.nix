@@ -83,8 +83,9 @@ in {
         OC_JWT_SECRET_FILE = config.sops.secrets.opencloud-jwt-secret.path;
         # Internal service-to-service auth (sharing, graph, ocs, frontend → users service).
         # Distinct from OIDC: Authelia auths end users; this auths microservices to each other.
+        # OC_SERVICE_ACCOUNT_SECRET is sourced via EnvironmentFile (sops template) below —
+        # OpenCloud's sharing service doesn't honor the `_FILE` suffix for this var.
         OC_SERVICE_ACCOUNT_ID = "df05a249-75f4-4d12-8399-aa9d793e3899";
-        OC_SERVICE_ACCOUNT_SECRET_FILE = config.sops.secrets.opencloud-service-account-secret.path;
         COLLABORATION_JWT_SECRET_FILE = mkIf cfg.enable_onlyoffice config.sops.secrets.opencloud-collab-secret.path;
         COLLABORATION_OO_SECRET_FILE = config.sops.secrets.opencloud-collab-secret.path;
         # Public URL where OnlyOffice (running in podman) calls back to WOPI; the
@@ -185,6 +186,20 @@ in {
         };
       };
     };
+
+    # Render the service-account secret into a KEY=value env file and feed it to
+    # the opencloud unit as EnvironmentFile. `_FILE` suffix isn't honored by the
+    # sharing service for OC_SERVICE_ACCOUNT_SECRET, so we inline the value.
+    sops.templates."opencloud-service-account.env" = {
+      content = ''
+        OC_SERVICE_ACCOUNT_SECRET=${config.sops.placeholder.opencloud-service-account-secret}
+      '';
+      owner = "opencloud";
+    };
+
+    systemd.services.opencloud.serviceConfig.EnvironmentFile = [
+      config.sops.templates."opencloud-service-account.env".path
+    ];
 
     environment.etc."opencloud/csp.yaml".text = ''
       directives:
