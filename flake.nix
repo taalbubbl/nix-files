@@ -81,7 +81,7 @@
           nixpkgs.lib.nixosSystem {
             system = "x86_64-linux";
             modules = [
-              { nixpkgs.overlays = [ overlay ]; }
+              { nixpkgs.overlays = [ overlay openpronounce.overlays.default ]; }
               taalbubbl.nixosModules.default
               openpronounce.nixosModules.default
               ./machines/chuchichaestli/default.nix
