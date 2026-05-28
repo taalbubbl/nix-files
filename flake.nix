@@ -98,6 +98,9 @@
                       "nix-files.cachix.org-1:PnXUkf49ZDLHSiaQ0GPgB+FCynpa2A3SsPHRAgX+UrI="
                     ];
                   };
+                  nix.extraOptions = ''
+                    !include ${config.sops.secrets.github-token.path}
+                  '';
                 sops = {
                   defaultSopsFile = ./security/secrets.yaml;
                   age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
