@@ -157,11 +157,11 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1779901399,
-        "narHash": "sha256-V3QhvqVOvNrgfYAvHMzDI8si3KFMPYWYZ4mmpvxJBwg=",
+        "lastModified": 1779919684,
+        "narHash": "sha256-ESNbn9BXWEjN0jSpgTIBhuvbWEPDry7yWVBoyMmRG0M=",
         "owner": "taalbubbl",
         "repo": "OpenPronounce",
-        "rev": "f944550d7f81fd26949b4591886c796e2d040952",
+        "rev": "2f64f17602953b73068d8cb0a4ceac74125dcbfd",
         "type": "github"
       },
       "original": {
