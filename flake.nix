@@ -97,7 +97,7 @@
                     ];
                     trusted-public-keys = [
                       
-                      "nix-files.cachix.org-1:nix-files.cachix.org-1:PnXUkf49ZDLHSiaQ0GPgB+FCynpa2A3SsPHRAgX+UrI="
+                      "nix-files.cachix.org-1:PnXUkf49ZDLHSiaQ0GPgB+FCynpa2A3SsPHRAgX+UrI="
                     ];
                   };
                 sops = {
