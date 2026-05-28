@@ -81,6 +81,10 @@ in {
         WEB_OIDC_SCOPE = "openid profile email groups";
         # Secrets must be env vars (sops writes a file, not an inline value)
         OC_JWT_SECRET_FILE = config.sops.secrets.opencloud-jwt-secret.path;
+        # Internal service-to-service auth (sharing, graph, ocs, frontend → users service).
+        # Distinct from OIDC: Authelia auths end users; this auths microservices to each other.
+        OC_SERVICE_ACCOUNT_ID = "df05a249-75f4-4d12-8399-aa9d793e3899";
+        OC_SERVICE_ACCOUNT_SECRET_FILE = config.sops.secrets.opencloud-service-account-secret.path;
         COLLABORATION_JWT_SECRET_FILE = mkIf cfg.enable_onlyoffice config.sops.secrets.opencloud-collab-secret.path;
         COLLABORATION_OO_SECRET_FILE = config.sops.secrets.opencloud-collab-secret.path;
         # Public URL where OnlyOffice (running in podman) calls back to WOPI; the
