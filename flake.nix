@@ -11,7 +11,7 @@
     };
     sops-nix.url = "github:Mic92/sops-nix";
 
-    # git+ssh cause its not opensource
+    # git+ssh is needed
     taalbubbl.url = "git+ssh://git@github.com/taalbubbl/taalbubbl?ref=main";
     openpronounce.url = "github:taalbubbl/OpenPronounce";
     
@@ -92,11 +92,9 @@
               {
                   nix.settings = {
                     substituters = [
-                      
                       "https://nix-files.cachix.org"
                     ];
                     trusted-public-keys = [
-                      
                       "nix-files.cachix.org-1:PnXUkf49ZDLHSiaQ0GPgB+FCynpa2A3SsPHRAgX+UrI="
                     ];
                   };
