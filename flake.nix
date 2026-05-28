@@ -88,8 +88,7 @@
               ./modules/postgresql.nix
               ./modules/pgbackrest-exporter.nix
 
-              # Plain attribute set — no config references needed here
-              {
+              ({ config, ... }: {
                   nix.settings = {
                     substituters = [
                       "https://nix-files.cachix.org"
@@ -117,6 +116,7 @@
                     group = "keys";
                   };
                   secrets.taalbubbl = {};
+                  secrets.github-token = {};
                   secrets.authelia-jwt-secret = { owner = "authelia-main"; };
                   secrets.authelia-session-secret = { owner = "authelia-main"; };
                   secrets.authelia-storage-key = { owner = "authelia-main"; };
@@ -156,7 +156,7 @@
                   path_radicale = "//var/lib/radicale/";
                   #config_file = "/data1/ocis/config/";
                 };
-              }
+              })
 
               # Separate module function — gives access to config
               ({ config, pkgs, ... }: {
