@@ -128,22 +128,22 @@
                   secrets.authelia-storage-key = { owner = "authelia-main"; };
                   secrets.authelia-oidc-hmac = { owner = "authelia-main"; };
                   secrets.authelia-oidc-private-key = { owner = "authelia-main"; };
-                  # secrets.opencloud-jwt-secret = { owner = "opencloud"; };
-                  # secrets.opencloud-collab-secret = { owner = "opencloud"; };
-                  # secrets.opencloud-service-account-secret = { owner = "opencloud"; };
-                  # # Second mount of the same secret so OnlyOffice can read it as its
+                  secrets.opencloud-jwt-secret = { owner = "opencloud"; };
+                  secrets.opencloud-collab-secret = { owner = "opencloud"; };
+                  secrets.opencloud-service-account-secret = { owner = "opencloud"; };
+                  # Second mount of the same secret so OnlyOffice can read it as its
                   # # own JWT signing key — keeps the two halves of the WOPI JWT path in
                   # # sync without a second source-of-truth.
-                  # secrets.onlyoffice-jwt-secret = {
-                  #   key = "opencloud-collab-secret";
-                  #   owner = "onlyoffice";
-                  # };
+                  secrets.onlyoffice-jwt-secret = {
+                     key = "opencloud-collab-secret";
+                     owner = "onlyoffice";
+                   };
                   # # nginx needs to `include` the nonce file too — give it group read.
-                  # secrets.onlyoffice-security-nonce = {
-                  #   owner = "onlyoffice";
-                  #   group = "nginx";
-                  #   mode = "0440";
-                  # };
+                  secrets.onlyoffice-security-nonce = {
+                    owner = "onlyoffice";
+                    group = "nginx";
+                    mode = "0440";
+                  };
                 };
                 vikunja = {
                   enable = true;
@@ -176,12 +176,12 @@
                   };
                   environmentFile = config.sops.secrets.taalbubbl.path;
                 };
-                # services.openpronounce = {
-                #   enable = true;
-                #   port = 8000;
-                #   host = "0.0.0.0";
+                 services.openpronounce = {
+                   enable = true;
+                   port = 8000;
+                   host = "0.0.0.0";
                 #   # environmentFile = "/run/secrets/openpronounce.env";
-                # };
+                };
                 wildcloud.postgresql = {
                   enable = true;
                   postgresql = {
