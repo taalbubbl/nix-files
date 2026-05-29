@@ -154,14 +154,14 @@
                   # lokiPort = 3100;
                 };
                 authelia.enable = true;
-                cloud = {
-                  enable =true;
-                  data_dir = "/var/lib/opencloud";
-                  enable_onlyoffice = true;
-                  enable_radicale = false;
-                  path_radicale = "//var/lib/radicale/";
-                  #config_file = "/data1/ocis/config/";
-                };
+                # cloud = {
+                #   enable =true;
+                #   data_dir = "/var/lib/opencloud";
+                #   enable_onlyoffice = true;
+                #   enable_radicale = false;
+                #   path_radicale = "//var/lib/radicale/";
+                #   #config_file = "/data1/ocis/config/";
+                # };
               })
 
               # Separate module function — gives access to config
@@ -176,12 +176,12 @@
                   };
                   environmentFile = config.sops.secrets.taalbubbl.path;
                 };
-                services.openpronounce = {
-                  enable = true;
-                  port = 8000;
-                  host = "0.0.0.0";
-                  # environmentFile = "/run/secrets/openpronounce.env";
-                };
+                # services.openpronounce = {
+                #   enable = true;
+                #   port = 8000;
+                #   host = "0.0.0.0";
+                #   # environmentFile = "/run/secrets/openpronounce.env";
+                # };
                 wildcloud.postgresql = {
                   enable = true;
                   postgresql = {
