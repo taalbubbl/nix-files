@@ -437,11 +437,11 @@
         "rust-overlay": "rust-overlay_2"
       },
       "locked": {
-        "lastModified": 1780003563,
-        "narHash": "sha256-aznJipPXCS3aDEiorg0aMfsHFz9Fsnwzs+kUo+dkdIE=",
+        "lastModified": 1780052412,
+        "narHash": "sha256-J1y/glaGWkpTsaHIn76xTYnzo11bRmDY+TvQpg9Art8=",
         "ref": "main",
-        "rev": "4e2ea5723ee0dc8dd57e531f339b108aa834ac65",
-        "revCount": 246,
+        "rev": "0e73aadf3df5f7a888229af60263520185d6f41c",
+        "revCount": 249,
         "type": "git",
         "url": "ssh://git@github.com/taalbubbl/taalbubbl"
       },

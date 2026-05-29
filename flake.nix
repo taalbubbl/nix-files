@@ -134,16 +134,16 @@
                   # Second mount of the same secret so OnlyOffice can read it as its
                   # # own JWT signing key — keeps the two halves of the WOPI JWT path in
                   # # sync without a second source-of-truth.
-                  secrets.onlyoffice-jwt-secret = {
-                     key = "opencloud-collab-secret";
-                     owner = "onlyoffice";
-                   };
+                  # secrets.onlyoffice-jwt-secret = {
+                  #    key = "opencloud-collab-secret";
+                  #    owner = "onlyoffice";
+                  #  };
                   # # nginx needs to `include` the nonce file too — give it group read.
-                  secrets.onlyoffice-security-nonce = {
-                    owner = "onlyoffice";
-                    group = "nginx";
-                    mode = "0440";
-                  };
+                  # secrets.onlyoffice-security-nonce = {
+                  #   owner = "onlyoffice";
+                  #   group = "nginx";
+                  #   mode = "0440";
+                  # };
                 };
                 vikunja = {
                   enable = true;
