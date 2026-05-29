@@ -173,16 +173,16 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1779622335,
-        "narHash": "sha256-ViA62qtL5za7V3d5I8OA9q9JcFhsVAiL5jVHwEclWqk=",
-        "owner": "NixOS",
+        "lastModified": 1779988366,
+        "narHash": "sha256-9xiRWfNanA+fZu8tIyBx6P1IN7t/MDkxPvLqNHDQIko=",
+        "owner": "taalbubbl",
         "repo": "nixpkgs",
-        "rev": "705e9929918b43bd7b715dc0a878ac870449bb03",
+        "rev": "cdf88cda3c6080626cd072195e1748f1266b8bca",
         "type": "github"
       },
       "original": {
-        "owner": "NixOS",
-        "ref": "nixos-26.05",
+        "owner": "taalbubbl",
+        "ref": "master",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -305,11 +305,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1779919684,
-        "narHash": "sha256-ESNbn9BXWEjN0jSpgTIBhuvbWEPDry7yWVBoyMmRG0M=",
+        "lastModified": 1780001372,
+        "narHash": "sha256-sInxXHBWBjllt2F7WekK9ihFcctueMlgb+Fg2IdLBTw=",
         "owner": "taalbubbl",
         "repo": "OpenPronounce",
-        "rev": "2f64f17602953b73068d8cb0a4ceac74125dcbfd",
+        "rev": "7e022d9124c186b2aefba9b3b3c6e2854cc4b59c",
         "type": "github"
       },
       "original": {
@@ -437,11 +437,11 @@
         "rust-overlay": "rust-overlay_2"
       },
       "locked": {
-        "lastModified": 1779995518,
-        "narHash": "sha256-KAC35efOW8dCLxdOXg2rXjOw4tKrjFCjo60w909MODc=",
+        "lastModified": 1780003563,
+        "narHash": "sha256-aznJipPXCS3aDEiorg0aMfsHFz9Fsnwzs+kUo+dkdIE=",
         "ref": "main",
-        "rev": "aa3876c376938aeb91161259d220bcdd6d16581c",
-        "revCount": 245,
+        "rev": "4e2ea5723ee0dc8dd57e531f339b108aa834ac65",
+        "revCount": 246,
         "type": "git",
         "url": "ssh://git@github.com/taalbubbl/taalbubbl"
       },
