@@ -184,7 +184,7 @@
                   environmentFile = config.sops.secrets.taalbubbl.path;
                 };
                  services.openpronounce = {
-                   enable = true;
+                   enable = false;
                    port = 8000;
                    host = "0.0.0.0";
                 #   # environmentFile = "/run/secrets/openpronounce.env";
