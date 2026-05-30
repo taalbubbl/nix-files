@@ -99,9 +99,15 @@
                   nix.settings = {
                     substituters = [
                       "https://nix-files.cachix.org"
+                      "https://cache.nixos.org"
+                      "https://cache.flox.dev"
+                      "https://cuda-maintainers.cachix.org"
                     ];
                     trusted-public-keys = [
                       "nix-files.cachix.org-1:PnXUkf49ZDLHSiaQ0GPgB+FCynpa2A3SsPHRAgX+UrI="
+                      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+                      "flox-cache-public-1:7F4OyH7ZCnFhcze3fJdfyXYLQw/aV7GEed86nQ7IsOs="
+                      "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E="
                     ];
                   };
                   nix.extraOptions = ''
