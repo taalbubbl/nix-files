@@ -305,11 +305,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1780001372,
-        "narHash": "sha256-sInxXHBWBjllt2F7WekK9ihFcctueMlgb+Fg2IdLBTw=",
+        "lastModified": 1780173923,
+        "narHash": "sha256-lSAPP6hl2veagsEQwqlIa5q4wEKJsaP3EyiCD0XRBEU=",
         "owner": "taalbubbl",
         "repo": "OpenPronounce",
-        "rev": "7e022d9124c186b2aefba9b3b3c6e2854cc4b59c",
+        "rev": "5efce6112a99816e07984942e5ec51b9b64cb8c6",
         "type": "github"
       },
       "original": {

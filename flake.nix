@@ -23,6 +23,7 @@
     
   };
 
+
   outputs = { self, nixpkgs, home-manager, sops-nix, taalbubbl, openpronounce}:
   let
     overlay = final: prev: {
