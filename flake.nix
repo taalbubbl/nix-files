@@ -138,7 +138,7 @@
                   secrets.opencloud-jwt-secret = { owner = "opencloud"; };
                   secrets.opencloud-collab-secret = { owner = "opencloud"; };
                   secrets.opencloud-service-account-secret = { owner = "opencloud"; };
-                  Second mount of the same secret so OnlyOffice can read it as its
+                  #Second mount of the same secret so OnlyOffice can read it as its
                   # own JWT signing key — keeps the two halves of the WOPI JWT path in
                   # sync without a second source-of-truth.
                   secrets.onlyoffice-jwt-secret = {
