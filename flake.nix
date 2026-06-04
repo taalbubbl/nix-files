@@ -4,7 +4,7 @@
 
   inputs = {
     nixpkgs.url = "github:taalbubbl/nixpkgs/master";
-    
+
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -20,7 +20,7 @@
       url = "github:taalbubbl/OpenPronounce";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    
+
   };
 
 
@@ -135,22 +135,22 @@
                   secrets.authelia-storage-key = { owner = "authelia-main"; };
                   secrets.authelia-oidc-hmac = { owner = "authelia-main"; };
                   secrets.authelia-oidc-private-key = { owner = "authelia-main"; };
-                  # secrets.opencloud-jwt-secret = { owner = "opencloud"; };
-                  # secrets.opencloud-collab-secret = { owner = "opencloud"; };
-                  # secrets.opencloud-service-account-secret = { owner = "opencloud"; };
-                  # Second mount of the same secret so OnlyOffice can read it as its
-                  # # own JWT signing key — keeps the two halves of the WOPI JWT path in
-                  # # sync without a second source-of-truth.
-                  # secrets.onlyoffice-jwt-secret = {
-                  #    key = "opencloud-collab-secret";
-                  #    owner = "onlyoffice";
-                  #  };
-                  # # nginx needs to `include` the nonce file too — give it group read.
-                  # secrets.onlyoffice-security-nonce = {
-                  #   owner = "onlyoffice";
-                  #   group = "nginx";
-                  #   mode = "0440";
-                  # };
+                  secrets.opencloud-jwt-secret = { owner = "opencloud"; };
+                  secrets.opencloud-collab-secret = { owner = "opencloud"; };
+                  secrets.opencloud-service-account-secret = { owner = "opencloud"; };
+                  Second mount of the same secret so OnlyOffice can read it as its
+                  # own JWT signing key — keeps the two halves of the WOPI JWT path in
+                  # sync without a second source-of-truth.
+                  secrets.onlyoffice-jwt-secret = {
+                     key = "opencloud-collab-secret";
+                     owner = "onlyoffice";
+                   };
+                  # nginx needs to `include` the nonce file too — give it group read.
+                  secrets.onlyoffice-security-nonce = {
+                    owner = "onlyoffice";
+                    group = "nginx";
+                    mode = "0440";
+                  };
                 };
                 vikunja = {
                   enable = true;
@@ -161,14 +161,13 @@
                   # lokiPort = 3100;
                 };
                 authelia.enable = true;
-                # cloud = {
-                #   enable =true;
-                #   data_dir = "/var/lib/opencloud";
-                #   enable_onlyoffice = true;
-                #   enable_radicale = false;
-                #   path_radicale = "//var/lib/radicale/";
-                #   #config_file = "/data1/ocis/config/";
-                # };
+                cloud = {
+                  enable =true;
+                  data_dir = "/var/lib/opencloud";
+                  enable_onlyoffice = true;
+                  enable_radicale = false;
+                  path_radicale = "/var/lib/radicale/";
+                };
               })
 
               # Separate module function — gives access to config
@@ -193,14 +192,14 @@
                   enable = true;
                   postgresql = {
                     port = 5432;
-                    package = pkgs.postgresql_18;                    
+                    package = pkgs.postgresql_18;
                   };
                   pgbackrest = {
                     stanzaName = "chuchichaestli";
                     repositories = [
                       {
-                        s3_bucket = "pgbackups"; 
-                        s3_region = "zurich"; 
+                        s3_bucket = "pgbackups";
+                        s3_region = "zurich";
                         s3_endpoint = "kaepfnach:9001";
                         s3_access_key = "GKf645bbb3f4e4dddef5f39959";
                         s3_secret_key = "c3fae00d51d40e4c9d515b0ebbe0d9fbce12c38486eb3f3a3f8873988cb9d628";
