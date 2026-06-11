@@ -21,6 +21,23 @@ with lib; let
   opencloud_url = "https://cloud.taalbubbl.org";
   hostname = "taalbubbl.org";
   cfg = config.cloud;
+
+  # draw.io is a pure frontend web extension (no backend / WOPI). It ships as a
+  # release zip from opencloud-eu/web-extensions; the editor itself runs in an
+  # iframe served from https://embed.diagrams.net (see CSP frame-src below).
+  drawioZip = pkgs.fetchurl {
+    url = "https://github.com/opencloud-eu/web-extensions/releases/download/draw-io-v2.0.0/draw-io-2.0.0.zip";
+    hash = "sha256-WvWdYK0kT2Cb9/zAitB9IhA+uUrzY/Gj9H15Q/WPP80=";
+  };
+  # OpenCloud's web service loads custom apps from WEB_ASSET_APPS_PATH (additive
+  # to the built-in apps). The zip already contains a top-level `draw-io/` folder
+  # with manifest.json, so unzipping it here yields `${opencloudWebApps}/draw-io`.
+  opencloudWebApps = pkgs.runCommand "opencloud-web-apps" {
+    nativeBuildInputs = [ pkgs.unzip ];
+  } ''
+    mkdir -p $out
+    unzip ${drawioZip} -d $out
+  '';
 in {
   options.cloud = {
     enable = mkEnableOption "Enable open cloud";
@@ -53,6 +70,11 @@ in {
       type = types.bool;
       default = false;
     };
+    enable_drawio = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Enable the draw.io web app extension (diagram editor) in OpenCloud Web.";
+    };
     enable_full_text_search = mkOption {
       type = types.bool;
       default = false;
@@ -70,6 +92,9 @@ in {
         # Service wiring — no YAML config equivalent in the NixOS module
         OC_EXCLUDE_RUN_SERVICES = "idp";
         OC_ADD_RUN_SERVICES = "collaboration";
+        # Load custom web apps (draw.io) from a read-only store path. Additive to
+        # the built-in apps; the web service auto-discovers anything here.
+        WEB_ASSET_APPS_PATH = mkIf cfg.enable_drawio "${opencloudWebApps}";
         # Running behind a reverse proxy
         PROXY_TLS = "false";
         OC_INSECURE = "true";
@@ -224,7 +249,7 @@ in {
           - "blob:"
           - "https://docs.opencloud.eu"
           - "https://*.${hostname}"
-          ${optionalString cfg.enable_onlyoffice "- \"https://embed.diagrams.net/\""}
+          ${optionalString cfg.enable_drawio "- \"https://embed.diagrams.net/\""}
           ${optionalString cfg.enable_onlyoffice "- \"https://office.${hostname}\""}
           ${optionalString cfg.enable_onlyoffice "- \"https://wopi.${hostname}\""}
          
