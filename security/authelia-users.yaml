@@ -50,6 +50,6 @@ users:
   max:
     displayname: "Max"
     password: "$argon2id$v=19$m=65536,t=3,p=4$MYT01GgsadlZEPTqjKi2dg$th5ZPYH+au2tlwkmRKdyZxe5hI6wdI7oMQ8YNrZKvvw"
-    email: "$argon2id$v=19$m=65536,t=3,p=4$MYT01GgsadlZEPTqjKi2dg$th5ZPYH+au2tlwkmRKdyZxe5hI6wdI7oMQ8YNrZKvvw"
+    email: "maxkoch3141@gmail.com"
     groups:
       - user
