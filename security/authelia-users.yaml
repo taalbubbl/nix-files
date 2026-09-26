@@ -53,3 +53,9 @@ users:
     email: "maxkoch3141@gmail.com"
     groups:
       - user
+  gabriele:
+    displayname: "Gabriele"
+    password: "$argon2id$v=19$m=65536,t=3,p=4$2HWxS/4DHcwnziu4KLUxvA$bPXXDrzjcThTndZTpdaPyOPYOspdthoqeMTLE5rHLfA"
+    email: "info@gabrielepizzi.com"
+    groups:
+      - user
